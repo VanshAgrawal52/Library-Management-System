@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
-import { Search, User, Github } from 'lucide-react';
+import React, { useState, useEffect} from 'react';
+import { Search, User, Github, BookOpen, FileText, Users, Calendar, Link, Building, Send, Check } from 'lucide-react';
+import {useNavigate } from "react-router-dom"; // if you’re using React Router
 
 export default function LibraryRequestPage() {
+  const navigate = useNavigate();
+  // Check for token in localStorage when component mounts
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
   const [formData, setFormData] = useState({
     // Requester Details
     email: '',
@@ -22,6 +32,8 @@ export default function LibraryRequestPage() {
     publisher: ''
   });
   const [status, setStatus] = useState('');
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,555 +43,396 @@ export default function LibraryRequestPage() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Check required fields
-    const requiredFields = ['email', 'rollEmployeeNo', 'requesterName', 'patronCategory', 'sourceUrl', 'documentTitle', 'publicationName', 'publicationYear', 'volumeNo', 'issueNo', 'publisher', 'authors', 'department'];
+    const requiredFields = ['email', 'rollEmployeeNo', 'requesterName', 'patronCategory', 'sourceUrl', 'documentTitle', 'publicationName', 'publicationYear', 'volumeNo', 'publisher', 'authors', 'department'];
     const missingFields = requiredFields.filter(field => !formData[field]);
 
     if (missingFields.length > 0) {
       setStatus('Please fill all compulsory fields (marked with *)');
-      setTimeout(() => setStatus(''), 3000);
+      setTimeout(() => setStatus(''), 4000);
       return;
     }
 
-    console.log('Request submitted:', formData);
-    setStatus('Request submitted successfully!');
-    setTimeout(() => setStatus(''), 3000);
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Request submitted:', formData);
+      setStatus('Request submitted successfully!');
+      setIsSubmitting(false);
+      setTimeout(() => setStatus(''), 4000);
+    }, 2000);
+  };
+
+  const nextStep = () => {
+    if (currentStep < 2) setCurrentStep(currentStep + 1);
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#ffffff',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      display: 'flex',
-      flexDirection: 'column'
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-40 left-40 w-60 h-60 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
 
-    }}>
-      {/* Header */}
-      <nav style={{
-        backgroundColor: '#ffffff',
-        padding: '16px 24px',
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: '#1B53A0',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold' }}>L</span>
-          </div>
-          <span style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937' }}>LibraryX</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div style={{ position: 'relative' }}>
-            <Search style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#9ca3af',
-              width: '18px',
-              height: '18px'
-            }} />
-            <input
-              type="text"
-              placeholder="Search"
-              style={{
-                paddingLeft: '40px',
-                paddingRight: '16px',
-                paddingTop: '8px',
-                paddingBottom: '8px',
-                borderRadius: '20px',
-                border: '1px solid #d1d5db',
-                backgroundColor: '#ffffff',
-                fontSize: '14px',
-                width: '200px',
-                outline: 'none'
-              }}
-            />
-          </div>
-
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <a href="#" style={{ textDecoration: 'none', color: '#6b7280', fontSize: '14px' }}>Home</a>
-            <a href="#" style={{ textDecoration: 'none', color: '#6b7280', fontSize: '14px' }}>Bookmarks</a>
-            <a href="#" style={{ textDecoration: 'none', color: '#6b7280', fontSize: '14px' }}>New Request</a>
-            <a href="#" style={{ textDecoration: 'none', color: '#6b7280', fontSize: '14px' }}>Logout</a>
-          </nav>
-
-          <div style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: '#fbbf24',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <User style={{ width: '18px', height: '18px', color: 'white' }} />
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content - Full Width Background */}
-      <main style={{
-        flex: 1,
-        backgroundColor: '#f8f9fa',
-        padding: '48px 0'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          padding: '0 24px'
-        }}>
-          <div style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-            padding: '32px',
-            width: '100%',
-            maxWidth: '700px',
-            border: '1px solid #e5e7eb'
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <h1 style={{
-                fontSize: '32px',
-                fontWeight: '700',
-                color: '#1f2937',
-                margin: '0 0 16px 0'
-              }}>
-                Document Request Submission
-              </h1>
+      {/* Main Content */}
+      <main className="relative z-10 py-12 px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <FileText className="w-4 h-4" />
+              <span>Document Request</span>
             </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Request Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Document</span>
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Submit your document request and we'll help you access the resources you need for your research and studies.
+            </p>
+          </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center mb-12">
+            <div className="flex items-center space-x-4">
+              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${currentStep >= 1 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'
+                }`}>
+                <Users className="w-5 h-5" />
+                <span className="font-medium">Personal Info</span>
+              </div>
+              <div className={`w-8 h-0.5 transition-all duration-300 ${currentStep >= 2 ? 'bg-blue-500' : 'bg-gray-300'
+                }`}></div>
+              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${currentStep >= 2 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'
+                }`}>
+                <FileText className="w-5 h-5" />
+                <span className="font-medium">Document Details</span>
+              </div>
+            </div>
+          </div>
 
-              {/* Requester Details Section */}
-              <div>
-                <h2 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#1f2937',
-                  marginBottom: '16px',
-                  borderBottom: '2px solid #1B53A0',
-                  paddingBottom: '8px'
-                }}>
-                  Requester Details
-                </h2>
+          {/* Form Container */}
+          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 relative">
+            <div className="space-y-8">
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {/* Email ID */}
+              {/* Step 1: Requester Details */}
+              <div className={`transition-all duration-500 ${currentStep === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute inset-0'}`}>
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
                   <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
+                    <p className="text-gray-600">Tell us about yourself</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-6">
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
                     <input
                       type="email"
                       name="email"
-                      placeholder="Email ID *"
                       value={formData.email}
                       onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                      placeholder="your.email@university.edu"
                     />
                   </div>
 
-                  {/* Roll No./Employee No. and Name */}
-                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <input
-                      type="text"
-                      name="rollEmployeeNo"
-                      placeholder="Roll No. / Employee No. *"
-                      value={formData.rollEmployeeNo}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 1,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="requesterName"
-                      placeholder="Name of Requester *"
-                      value={formData.requesterName}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 1,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      required
-                    />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Roll No. / Employee No. *</label>
+                      <input
+                        type="text"
+                        name="rollEmployeeNo"
+                        value={formData.rollEmployeeNo}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                        placeholder="Enter your ID"
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                      <input
+                        type="text"
+                        name="requesterName"
+                        value={formData.requesterName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                        placeholder="Your full name"
+                      />
+                    </div>
                   </div>
 
-                  {/* Patron Category and Department */}
-                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <select
-                      name="patronCategory"
-                      value={formData.patronCategory}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 1,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: formData.patronCategory ? '#1f2937' : '#9ca3af',
-                        outline: 'none',
-                        appearance: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      required
-                    >
-                      <option value="">Patron Category *</option>
-                      <option value="student">Student</option>
-                      <option value="faculty">Faculty</option>
-                      <option value="staff">Staff</option>
-                      <option value="researcher">Researcher</option>
-                      <option value="visiting_scholar">Visiting Scholar</option>
-                    </select>
-                    <input
-                      type="text"
-                      name="department"
-                      placeholder="Department/School/Center/IDRP *"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 1,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Patron Category *</label>
+                      <select
+                        name="patronCategory"
+                        value={formData.patronCategory}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300 appearance-none"
+                      >
+                        <option value="">Select category</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="staff">Staff</option>
+                        <option value="researcher">Researcher</option>
+                        <option value="visiting_scholar">Visiting Scholar</option>
+                      </select>
+                    </div>
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={formData.department}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                        placeholder="Department/School/Center"
+                      />
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex justify-end mt-8">
+                  <button
+                    onClick={nextStep}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    <span>Next Step</span>
+                    <Send className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Document Details Section */}
-              <div>
-                <h2 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#1f2937',
-                  marginBottom: '16px',
-                  borderBottom: '2px solid #1B53A0',
-                  paddingBottom: '8px'
-                }}>
-                  Details of the Required Document
-                </h2>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {/* Title of Document */}
+              {/* Step 2: Document Details */}
+              <div className={`transition-all duration-500 ${currentStep === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute inset-0'}`}>
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
                   <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Document Information</h2>
+                    <p className="text-gray-600">Details about the document you need</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-6">
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Document Title *</label>
                     <input
                       type="text"
                       name="documentTitle"
-                      placeholder="Title of the Document *"
                       value={formData.documentTitle}
                       onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                      placeholder="Enter the full title of the document"
                     />
                   </div>
 
-                  {/* Authors */}
-                  <div>
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Authors *</label>
                     <input
                       type="text"
                       name="authors"
-                      placeholder="Author(s) *"
                       value={formData.authors}
                       onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                      placeholder="Lastname, Firstname initial; Shakespeare, W.; Doe, J."
                     />
                   </div>
 
-                  {/* Name of Publication and Year */}
-                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <input
-                      type="text"
-                      name="publicationName"
-                      placeholder="Name of Publication *"
-                      value={formData.publicationName}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 2,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                    <input
-                      type="number"
-                      name="publicationYear"
-                      placeholder="Year *"
-                      value={formData.publicationYear}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: 1,
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="group md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Publication Name *</label>
+                      <input
+                        type="text"
+                        name="publicationName"
+                        value={formData.publicationName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="Journal or publication name"
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Year *</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <input
+                          type="number"
+                          name="publicationYear"
+                          value={formData.publicationYear}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                          placeholder="2024"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Volume, Issue, Page Range */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '16px',
-                      flexWrap: 'wrap', // allows wrapping when space is small
-                    }}
-                  >
-                    <input
-                      type="text"
-                      name="volumeNo"
-                      placeholder="Volume No. *"
-                      value={formData.volumeNo}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: '1 1 0', // allows shrink & grow
-                        minWidth: '0', // prevents overflow
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                    <input
-                      type="text"
-                      name="issueNo"
-                      placeholder="Issue No. *"
-                      value={formData.issueNo}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: '1 1 0',
-                        minWidth: '0',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                    <input
-                      type="text"
-                      name="pageRange"
-                      placeholder="Page Range"
-                      value={formData.pageRange}
-                      onChange={handleInputChange}
-                      style={{
-                        flex: '1 1 0',
-                        minWidth: '0',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Volume *</label>
+                      <input
+                        type="text"
+                        name="volumeNo"
+                        value={formData.volumeNo}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="Vol. 1"
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Issue</label>
+                      <input
+                        type="text"
+                        name="issueNo"
+                        value={formData.issueNo}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="Issue 1"
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Page Range</label>
+                      <input
+                        type="text"
+                        name="pageRange"
+                        value={formData.pageRange}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="1-20"
+                      />
+                    </div>
                   </div>
 
-                  {/* Source URL/DOI */}
-                  <div>
-                    <input
-                      type="url"
-                      name="sourceUrl"
-                      placeholder="Source URL/DOI *"
-                      value={formData.sourceUrl}
-                      onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      required
-                    />
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Source URL/DOI *</label>
+                    <div className="relative">
+                      <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="url"
+                        name="sourceUrl"
+                        value={formData.sourceUrl}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="https://doi.org/10.1000/example or direct URL"
+                      />
+                    </div>
                   </div>
 
-                  {/* Publisher */}
-                  <div>
-                    <input
-                      type="text"
-                      name="publisher"
-                      placeholder="Publisher *"
-                      value={formData.publisher}
-                      onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #d1d5db',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        color: '#1f2937',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Publisher *</label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        name="publisher"
+                        value={formData.publisher}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 group-hover:border-green-300"
+                        placeholder="Publisher name"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Submit Button */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
-                <button
-                  onClick={handleSubmit}
-                  style={{
-                    backgroundColor: '#1B53A0',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '12px 24px',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#4f46e5'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#1B53A0'}
-                >
-                  Submit Request
-                </button>
-                <span style={{
-                  fontSize: '14px',
-                  color: '#6b7280'
-                }}>
-                  Fields marked with * are compulsory
-                </span>
+                <div className="flex items-center justify-between mt-8">
+                  <button
+                    onClick={prevStep}
+                    className="flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-gray-600 border border-gray-300 hover:border-gray-400 transition-all duration-300"
+                  >
+                    <span>← Previous</span>
+                  </button>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className={`flex items-center space-x-2 px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${isSubmitting
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg'
+                      }`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Submit Request</span>
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Status Message */}
               {status && (
-                <div style={{
-                  padding: '12px 16px',
-                  backgroundColor: status.includes('successfully') ? '#dcfce7' : '#fef2f2',
-                  border: status.includes('successfully') ? '1px solid #bbf7d0' : '1px solid #fecaca',
-                  borderRadius: '6px',
-                  color: status.includes('successfully') ? '#166534' : '#dc2626',
-                  fontSize: '14px'
-                }}>
-                  {status}
+                <div className={`flex items-center space-x-3 p-4 rounded-xl border transition-all duration-300 ${status.includes('successfully')
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                  {status.includes('successfully') ? (
+                    <Check className="w-5 h-5 flex-shrink-0" />
+                  ) : (
+                    <FileText className="w-5 h-5 flex-shrink-0" />
+                  )}
+                  <span className="font-medium">{status}</span>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Help Section */}
+          <div className="mt-12 grid md:grid-cols-3 gap-6">
+            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Document Types</h3>
+              <p className="text-sm text-gray-600">We support journal articles, books, conference papers, and more.</p>
+            </div>
+            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Quick Processing</h3>
+              <p className="text-sm text-gray-600">Most requests are processed within 2-3 business days.</p>
+            </div>
+            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Send className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Email Delivery</h3>
+              <p className="text-sm text-gray-600">Documents are delivered directly to your registered email.</p>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer - Full Width */}
-      <footer style={{
-        backgroundColor: '#ffffff',
-        padding: '24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: '14px',
-        color: '#6b7280',
-        width: '100%',
-        margin: '0'
-      }}>
-        <div>© 2025 LibraryX</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>Built by</span>
-          <a
-            href="#"
-            style={{
-              color: '#1B53A0',
-              textDecoration: 'none',
-              fontWeight: '500'
-            }}
-          >
-            Vansh Agrawal
-          </a>
-          <Github
-            style={{
-              width: '16px',
-              height: '16px',
-              color: '#6b7280'
-            }}
-          />
+      {/* Footer */}
+      <footer className="relative z-10 bg-white/80 backdrop-blur-sm border-t border-white/20 py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="text-gray-600">© 2025 LibraryX. All rights reserved.</div>
+          <div className="flex items-center space-x-3 text-gray-600">
+            <span>Built with ❤️ by</span>
+            <a
+              href="#"
+              className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Kavya
+            </a>
+            <Github className="w-4 h-4 text-gray-400" />
+          </div>
         </div>
       </footer>
     </div>
