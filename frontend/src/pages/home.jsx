@@ -1,9 +1,35 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, User, Github, BookOpen, FileText, Users, Calendar, Link, Building, Send, Check } from 'lucide-react';
-import {useNavigate } from "react-router-dom"; // if you’re using React Router
+import { useNavigate } from "react-router-dom"; // if you’re using React Router
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 export default function LibraryRequestPage() {
   const navigate = useNavigate();
+
+  // Check for token and user data in localStorage when component mounts
+  useEffect(() => {
+    // Load user data from localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // setUser(parsedUser);
+        // Set email in formData
+        setFormData(prev => ({
+          ...prev,
+          email: parsedUser.email || '' // Set email from user object, fallback to empty string
+        }));
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+      }
+    } else {
+      // No user data found, redirect to login
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    }
+  }, [navigate]);
+
   // Check for token in localStorage when component mounts
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -15,12 +41,6 @@ export default function LibraryRequestPage() {
   const [formData, setFormData] = useState({
     // Requester Details
     email: '',
-    rollEmployeeNo: '',
-    requesterName: '',
-    patronCategory: '',
-    department: '',
-
-    // Document Details
     documentTitle: '',
     authors: '',
     publicationName: '',
@@ -43,9 +63,10 @@ export default function LibraryRequestPage() {
     }));
   };
 
+  // Snippet 8: Example for frontend integration (replace setTimeout in handleSubmit)
   const handleSubmit = async () => {
     // Check required fields
-    const requiredFields = ['email', 'rollEmployeeNo', 'requesterName', 'patronCategory', 'sourceUrl', 'documentTitle', 'publicationName', 'publicationYear', 'volumeNo', 'publisher', 'authors', 'department'];
+    const requiredFields = ['email','sourceUrl', 'documentTitle', 'publicationName', 'publicationYear', 'volumeNo', 'publisher', 'authors'];
     const missingFields = requiredFields.filter(field => !formData[field]);
 
     if (missingFields.length > 0) {
@@ -55,21 +76,31 @@ export default function LibraryRequestPage() {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Request submitted:', formData);
-      setStatus('Request submitted successfully!');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetchWithAuth('http://localhost:5000/api/requests/submit', {  // Adjust URL if backend is on different port/domain
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)  // Note: Backend doesn't use email from body for storage, but you can send it
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStatus('Request submitted successfully!');
+        console.log('Request submitted:', data);
+      } else {
+        setStatus(data.message || 'Submission failed');
+      }
+    } catch (error) {
+      setStatus('Error submitting request');
+      console.error(error);
+    } finally {
       setIsSubmitting(false);
       setTimeout(() => setStatus(''), 4000);
-    }, 2000);
-  };
-
-  const nextStep = () => {
-    if (currentStep < 2) setCurrentStep(currentStep + 1);
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    }
   };
 
   return (
@@ -101,14 +132,7 @@ export default function LibraryRequestPage() {
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-12">
             <div className="flex items-center space-x-4">
-              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${currentStep >= 1 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'
-                }`}>
-                <Users className="w-5 h-5" />
-                <span className="font-medium">Personal Info</span>
-              </div>
-              <div className={`w-8 h-0.5 transition-all duration-300 ${currentStep >= 2 ? 'bg-blue-500' : 'bg-gray-300'
-                }`}></div>
-              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${currentStep >= 2 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'
+              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 bg-blue-100 text-blue-800'
                 }`}>
                 <FileText className="w-5 h-5" />
                 <span className="font-medium">Document Details</span>
@@ -119,101 +143,8 @@ export default function LibraryRequestPage() {
           {/* Form Container */}
           <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 relative">
             <div className="space-y-8">
-
-              {/* Step 1: Requester Details */}
-              <div className={`transition-all duration-500 ${currentStep === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute inset-0'}`}>
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
-                    <p className="text-gray-600">Tell us about yourself</p>
-                  </div>
-                </div>
-
-                <div className="grid gap-6">
-                  <div className="group">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                      placeholder="your.email@university.edu"
-                    />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Roll No. / Employee No. *</label>
-                      <input
-                        type="text"
-                        name="rollEmployeeNo"
-                        value={formData.rollEmployeeNo}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                        placeholder="Enter your ID"
-                      />
-                    </div>
-                    <div className="group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
-                      <input
-                        type="text"
-                        name="requesterName"
-                        value={formData.requesterName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                        placeholder="Your full name"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Patron Category *</label>
-                      <select
-                        name="patronCategory"
-                        value={formData.patronCategory}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300 appearance-none"
-                      >
-                        <option value="">Select category</option>
-                        <option value="student">Student</option>
-                        <option value="faculty">Faculty</option>
-                        <option value="staff">Staff</option>
-                        <option value="researcher">Researcher</option>
-                        <option value="visiting_scholar">Visiting Scholar</option>
-                      </select>
-                    </div>
-                    <div className="group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
-                      <input
-                        type="text"
-                        name="department"
-                        value={formData.department}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                        placeholder="Department/School/Center"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end mt-8">
-                  <button
-                    onClick={nextStep}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
-                  >
-                    <span>Next Step</span>
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
               {/* Step 2: Document Details */}
-              <div className={`transition-all duration-500 ${currentStep === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute inset-0'}`}>
+              <div className={`transition-all duration-500 ${currentStep === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute inset-0'}`}>
                 <div className="flex items-center space-x-3 mb-8">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <FileText className="w-6 h-6 text-white" />
@@ -345,19 +276,13 @@ export default function LibraryRequestPage() {
                 </div>
 
                 <div className="flex items-center justify-between mt-8">
-                  <button
-                    onClick={prevStep}
-                    className="flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-gray-600 border border-gray-300 hover:border-gray-400 transition-all duration-300"
-                  >
-                    <span>← Previous</span>
-                  </button>
 
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                     className={`flex items-center space-x-2 px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${isSubmitting
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg'
                       }`}
                   >
                     {isSubmitting ? (
@@ -378,8 +303,8 @@ export default function LibraryRequestPage() {
               {/* Status Message */}
               {status && (
                 <div className={`flex items-center space-x-3 p-4 rounded-xl border transition-all duration-300 ${status.includes('successfully')
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-red-50 border-red-200 text-red-800'
+                  ? 'bg-green-50 border-green-200 text-green-800'
+                  : 'bg-red-50 border-red-200 text-red-800'
                   }`}>
                   {status.includes('successfully') ? (
                     <Check className="w-5 h-5 flex-shrink-0" />

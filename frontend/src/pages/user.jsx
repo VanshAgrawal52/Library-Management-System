@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Eye, Download, Clock, CheckCircle, Truck, Package, MapPin, User, BookOpen, Users } from 'lucide-react';
+import { Search, Eye, Download, Clock, CheckCircle, Truck, Package, MapPin, User, BookOpen, Users, Hourglass,X } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom"; // if you’re using React Router
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [status, setStatus] = useState('');
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Check for token in localStorage when component mounts
     useEffect(() => {
@@ -44,10 +48,10 @@ const UserDashboard = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include', // important for refresh cookie
             });
 
             if (response.ok) {
-                // Clear any client-side user data (e.g., localStorage, context, or state)
                 localStorage.removeItem('token'); // Example: Remove user data if stored
                 localStorage.removeItem('user'); // Example: Remove user data if stored
                 // Redirect to login page
@@ -62,132 +66,42 @@ const UserDashboard = () => {
         }
     };
 
-    // Sample requests data with different statuses
-    const [requests] = useState([
-        {
-            id: 1,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "Machine Learning: A Probabilistic Perspective",
-            authors: "Kevin P. Murphy",
-            publicationName: "MIT Press",
-            publicationYear: 2012,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "https://mitpress.mit.edu/books/machine-learning-1",
-            publisher: "MIT Press",
-            status: "processing",
-            requestedAt: "2025-08-12T10:30:00Z"
-        },
-        {
-            id: 2,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "Deep Learning",
-            authors: "Ian Goodfellow, Yoshua Bengio, Aaron Courville",
-            publicationName: "MIT Press",
-            publicationYear: 2016,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "",
-            publisher: "MIT Press",
-            status: "accepted",
-            requestedAt: "2025-08-10T14:20:00Z"
-        },
-        {
-            id: 3,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "Pattern Recognition and Machine Learning",
-            authors: "Christopher Bishop",
-            publicationName: "Springer",
-            publicationYear: 2006,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "",
-            publisher: "Springer",
-            status: "pre-intransit",
-            requestedAt: "2025-08-08T09:15:00Z"
-        },
-        {
-            id: 4,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "The Elements of Statistical Learning",
-            authors: "Trevor Hastie, Robert Tibshirani, Jerome Friedman",
-            publicationName: "Springer",
-            publicationYear: 2009,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "",
-            publisher: "Springer",
-            status: "arrived",
-            requestedAt: "2025-08-05T16:45:00Z"
-        },
-        {
-            id: 5,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "Introduction to Information Retrieval",
-            authors: "Christopher Manning, Prabhakar Raghavan, Hinrich Schütze",
-            publicationName: "Cambridge University Press",
-            publicationYear: 2008,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "",
-            publisher: "Cambridge University Press",
-            status: "post-intransit",
-            requestedAt: "2025-08-03T11:20:00Z"
-        },
-        {
-            id: 6,
-            email: "john.doe@university.edu",
-            rollEmployeeNo: "CS2021001",
-            requesterName: "John Doe",
-            patronCategory: "student",
-            department: "Computer Science",
-            documentTitle: "Artificial Intelligence: A Modern Approach",
-            authors: "Stuart Russell, Peter Norvig",
-            publicationName: "Pearson",
-            publicationYear: 2020,
-            volumeNo: "",
-            issueNo: "",
-            pageRange: "",
-            sourceUrl: "",
-            publisher: "Pearson",
-            status: "completed",
-            requestedAt: "2025-08-01T13:10:00Z"
-        }
-    ]);
-    const [searchTerm, setSearchTerm] = useState('');
+    useEffect(() => {
+        const fetchRequests = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetchWithAuth("http://localhost:5000/api/requests", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch requests");
+                }
+
+                const data = await response.json();
+                setRequests(data);
+                console.log(data);
+            } catch (error) {
+                console.error("Error fetching requests:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRequests();
+    }, [navigate]); // Ensure proper syntax for dependency array
 
     const getStatusColor = (status) => {
         const colors = {
             processing: 'bg-orange-100 text-orange-800',
+            pending: 'bg-gray-100 text-gray-700',
             accepted: 'bg-blue-100 text-blue-800',
             'pre-intransit': 'bg-purple-100 text-purple-800',
-            arrived: 'bg-yellow-100 text-yellow-800',
-            'post-intransit': 'bg-indigo-100 text-indigo-800',
+            rejected: 'text-red-700 bg-red-100 border-red-200',
             completed: 'bg-green-100 text-green-800'
         };
         return colors[status] || 'bg-gray-100 text-gray-800';
@@ -195,10 +109,11 @@ const UserDashboard = () => {
 
     const getStatusIcon = (status) => {
         const icons = {
+            pending: <Hourglass className="w-4 h-4" />,
             processing: <Clock className="w-4 h-4" />,
             accepted: <CheckCircle className="w-4 h-4" />,
             'pre-intransit': <Package className="w-4 h-4" />,
-            arrived: <MapPin className="w-4 h-4" />,
+            rejected: <X className="w-4 h-4" />,
             'post-intransit': <Truck className="w-4 h-4" />,
             completed: <CheckCircle className="w-4 h-4" />
         };
@@ -214,6 +129,10 @@ const UserDashboard = () => {
             minute: '2-digit'
         });
     };
+
+    if (loading) {
+        return <div className="p-10 text-center">Loading requests...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -366,29 +285,29 @@ const UserDashboard = () => {
                                 </thead>
                                 <tbody className="bg-white/30 backdrop-blur-sm divide-y divide-white/20">
                                     {requests.map((request, index) => (
-                                        <tr key={request.id} className="hover:bg-white/50 transition-all duration-300">
+                                        <tr key={request._id || index} className="hover:bg-white/50 transition-all duration-300">
                                             <td className="px-8 py-6">
                                                 <div>
-                                                    <div className="font-bold text-gray-900 mb-1 text-lg">{request.documentTitle}</div>
-                                                    <div className="text-sm text-gray-600 font-medium">by {request.authors}</div>
+                                                    <div className="font-bold text-gray-900 mb-1 text-lg">{request.documentTitle ?? "Untitled"}</div>
+                                                    <div className="text-sm text-gray-600 font-medium">by {request.authors ?? "Unknown"}</div>
                                                     {request.publicationYear && (
                                                         <div className="text-sm text-gray-600 mt-1">Published: {request.publicationYear}</div>
                                                     )}
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="font-semibold text-gray-900">{request.publicationName}</div>
+                                                <div className="font-semibold text-gray-900">{request.publicationName ?? "N/A"}</div>
                                                 {request.publisher && request.publisher !== request.publicationName && (
                                                     <div className="text-sm text-gray-600 mt-1">{request.publisher}</div>
                                                 )}
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="font-semibold text-gray-900">{formatDate(request.requestedAt)}</div>
+                                                <div className="font-semibold text-gray-900">{formatDate(request.createdAt)}</div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <span className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(request.status)} shadow-sm`}>
                                                     {getStatusIcon(request.status)}
-                                                    <span className="capitalize">{request.status.replace('-', ' ')}</span>
+                                                    <span className="capitalize">{request.status?.replace('-', ' ') ?? "pending"}</span>
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
@@ -405,6 +324,7 @@ const UserDashboard = () => {
                                             </td>
                                         </tr>
                                     ))}
+
                                 </tbody>
                             </table>
                         </div>
@@ -423,33 +343,33 @@ const UserDashboard = () => {
                     </div>
 
                     {/* Quick Stats */}
-                    <div className="mt-12 grid md:grid-cols-3 gap-6">
-                        <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                <Package className="w-8 h-8 text-white" />
+                        {/* <div className="mt-12 grid md:grid-cols-3 gap-6">
+                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <Package className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Total Requests</h3>
+                                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{requests.length}</p>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Total Requests</h3>
-                            <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{requests.length}</p>
-                        </div>
-                        <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                <CheckCircle className="w-8 h-8 text-white" />
+                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <CheckCircle className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Completed</h3>
+                                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                                    {requests.filter(r => r.status === 'completed').length}
+                                </p>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Completed</h3>
-                            <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                {requests.filter(r => r.status === 'completed').length}
-                            </p>
-                        </div>
-                        <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                <Clock className="w-8 h-8 text-white" />
+                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <Clock className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">In Progress</h3>
+                                <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                                    {requests.filter(r => r.status !== 'completed').length}
+                                </p>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">In Progress</h3>
-                            <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
-                                {requests.filter(r => r.status !== 'completed').length}
-                            </p>
-                        </div>
-                    </div>
+                        </div> */}
                 </div>
             </main>
 

@@ -43,7 +43,8 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, password: formData.password })
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -98,7 +99,8 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, otp: otpString })
+        body: JSON.stringify({ email: formData.email, otp: otpString }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -130,7 +132,8 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:5000/api/auth/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email })
+        body: JSON.stringify({ email: formData.email }),
+        credentials: 'include',
       });
 
       const data = await res.json();

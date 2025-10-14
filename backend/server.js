@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/auth');
+const requestRoutes = require('./routes/requestRoutes');
 const { verifyAccessToken } = require('./middlewares/auth');
 
 const app = express();
@@ -21,12 +22,13 @@ app.use(cookieParser());
 
 // CORS - allow your frontend origin
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true // allow cookies
 }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Example protected route
 app.get('/api/protected', verifyAccessToken, (req, res) => {

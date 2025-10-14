@@ -1,15 +1,27 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+const User = require('../models/User');
 const { createAccessToken, createRefreshToken } = require('../utils/token');
 const transporter = require('../controllers/mailControllers');
 
 // send cookie with refresh token
+// const sendRefreshTokenCookie = (res, token) => {
+//   res.cookie('jid', token, {
+//     httpOnly: true,
+//     // secure: process.env.NODE_ENV === 'production',
+//     secure: false, // no HTTPS locally
+//     // sameSite: 'lax',
+//     sameSite: 'none',    // allow cross-site (5173 → 5000)
+//   });
+// };
 const sendRefreshTokenCookie = (res, token) => {
+  console.log('Setting jid cookie:', token);
   res.cookie('jid', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Explicitly false for local testing
     sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
   });
 };
 

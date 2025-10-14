@@ -1,34 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Github, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Users, Calendar, TrendingUp, Activity, Bell } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom"; // if you’re using React Router
+import { Search, User, Github, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Calendar, TrendingUp, Activity, Hourglass, Users } from 'lucide-react';
+import { Link, useNavigate } from "react-router-dom";
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 export default function ModernLibraryDashboard() {
   const navigate = useNavigate();
+  const [requests, setRequests] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Check for token in localStorage when component mounts
+  // Check for token and fetch requests on component mount
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
+      return;
     }
+    fetchRequests();
   }, [navigate]);
 
-  // Mock data for user requests with updated fields
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetchWithAuth("http://localhost:5000/api/requests/all", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching requests: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Map createdAt to requestedAt for frontend compatibility
+      const transformedData = data.map(request => ({
+        ...request,
+        requestedAt: request.createdAt,
+      }));
+      setRequests(transformedData);
+    } catch (error) {
+      console.error("❌ Error fetching requests:", error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/auth/logout", {
         method: 'POST',
-        credentials: 'include', // Include cookies in the request
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
-        // Clear any client-side user data (e.g., localStorage, context, or state)
-        localStorage.removeItem('token'); // Example: Remove user data if stored
-        localStorage.removeItem('user'); // Example: Remove user data if stored
-        // Redirect to login page
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/login');
       } else {
         console.error('Logout failed:', response.statusText);
@@ -40,197 +75,93 @@ export default function ModernLibraryDashboard() {
     }
   };
 
-  const [requests, setRequests] = useState([
-    {
-      id: 1,
-      // User Details
-      email: "john.doe@university.edu",
-      rollEmployeeNo: "CS2021001",
-      requesterName: "John Doe",
-      patronCategory: "student",
-      department: "Computer Science",
-
-      // Document Details
-      documentTitle: "Machine Learning: A Probabilistic Perspective",
-      authors: "Kevin P. Murphy",
-      publicationName: "MIT Press",
-      publicationYear: 2012,
-      volumeNo: "",
-      issueNo: "",
-      pageRange: "",
-      sourceUrl: "https://mitpress.mit.edu/books/machine-learning-1",
-      publisher: "MIT Press",
-
-      status: "pending",
-      requestedAt: "2025-08-12T10:30:00Z"
-    },
-    {
-      id: 2,
-      email: "sarah.johnson@university.edu",
-      rollEmployeeNo: "ENG2020045",
-      requesterName: "Sarah Johnson",
-      patronCategory: "student",
-      department: "English Literature",
-
-      documentTitle: "The Great Gatsby and the American Dream",
-      authors: "F. Scott Fitzgerald, Harold Bloom",
-      publicationName: "Modern Critical Interpretations",
-      publicationYear: 2010,
-      volumeNo: "12",
-      issueNo: "3",
-      pageRange: "45-68",
-      sourceUrl: "",
-      publisher: "Chelsea House Publications",
-
-      status: "approved",
-      requestedAt: "2025-08-11T14:15:00Z"
-    },
-    {
-      id: 3,
-      email: "m.chen@research.org",
-      rollEmployeeNo: "RES2024007",
-      requesterName: "Dr. Michael Chen",
-      patronCategory: "researcher",
-      department: "Climate Science Institute",
-
-      documentTitle: "Climate Change Impact on Arctic Ice Sheets",
-      authors: "Emma Wilson, Robert Taylor, Lisa Chang",
-      publicationName: "Nature Climate Change",
-      publicationYear: 2024,
-      volumeNo: "14",
-      issueNo: "8",
-      pageRange: "1023-1035",
-      sourceUrl: "https://doi.org/10.1038/s41558-024-01234-5",
-      publisher: "Nature Publishing Group",
-
-      status: "processing",
-      requestedAt: "2025-08-10T09:45:00Z"
-    },
-    {
-      id: 4,
-      email: "lisa.brown@company.com",
-      rollEmployeeNo: "EXT2024003",
-      requesterName: "Lisa Brown",
-      patronCategory: "external",
-      department: "Marketing Division",
-
-      documentTitle: "Digital Marketing Strategies in the Modern Era",
-      authors: "Philip Kotler, Gary Armstrong",
-      publicationName: "Journal of Marketing Research",
-      publicationYear: 2023,
-      volumeNo: "60",
-      issueNo: "4",
-      pageRange: "112-128",
-      sourceUrl: "",
-      publisher: "American Marketing Association",
-
-      status: "rejected",
-      requestedAt: "2025-08-09T16:20:00Z"
-    },
-    {
-      id: 5,
-      email: "d.wilson@physics.edu",
-      rollEmployeeNo: "PHYS2019012",
-      requesterName: "David Wilson",
-      patronCategory: "faculty",
-      department: "Physics Department",
-
-      documentTitle: "Quantum Mechanics and Path Integrals",
-      authors: "Richard P. Feynman, Albert R. Hibbs",
-      publicationName: "McGraw-Hill Education",
-      publicationYear: 2010,
-      volumeNo: "",
-      issueNo: "",
-      pageRange: "",
-      sourceUrl: "https://www.mheducation.com/highered/product/quantum-mechanics-path-integrals-feynman-hibbs/9780070206502.html",
-      publisher: "McGraw-Hill Education",
-
-      status: "approved",
-      requestedAt: "2025-08-08T11:10:00Z"
-    },
-    {
-      id: 6,
-      email: "r.taylor@med.university.edu",
-      rollEmployeeNo: "MED2022089",
-      requesterName: "Dr. Robert Taylor",
-      patronCategory: "faculty",
-      department: "Medical Ethics",
-
-      documentTitle: "AI Ethics in Healthcare Decision Making",
-      authors: "Jennifer Adams, Mark Thompson, Sarah Davis",
-      publicationName: "Journal of Medical Ethics",
-      publicationYear: 2024,
-      volumeNo: "50",
-      issueNo: "2",
-      pageRange: "89-102",
-      sourceUrl: "https://doi.org/10.1136/medethics-2024-109234",
-      publisher: "BMJ Publishing Group",
-
-      status: "pending",
-      requestedAt: "2025-08-07T13:30:00Z"
-    }
-  ]);
-
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPatronCategory, setFilterPatronCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-
   // Admin actions
-  const handleApprove = (requestId) => {
-    setRequests(requests.map(request =>
-      request.id === requestId
-        ? { ...request, status: 'approved' }
-        : request
-    ));
+  const handleApprove = async (requestId) => {
+    try {
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ status: 'accepted' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      await fetchRequests(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status to accepted. Please try again.');
+    }
   };
 
-  const handleReject = (requestId) => {
-    setRequests(requests.map(request =>
-      request.id === requestId
-        ? { ...request, status: 'rejected' }
-        : request
-    ));
+  const handleReject = async (requestId) => {
+    try {
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ status: 'rejected' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      await fetchRequests(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status to rejected. Please try again.');
+    }
   };
 
-  const handleSetProcessing = (requestId) => {
-    setRequests(requests.map(request =>
-      request.id === requestId
-        ? { ...request, status: 'processing' }
-        : request
-    ));
+  const handleSetProcessing = async (requestId) => {
+    try {
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ status: 'processing' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      await fetchRequests(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status to processing. Please try again.');
+    }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'text-green-700 bg-green-100 border-green-200';
+      case 'accepted': return 'text-green-700 bg-green-100 border-green-200';
       case 'rejected': return 'text-red-700 bg-red-100 border-red-200';
       case 'processing': return 'text-amber-700 bg-amber-100 border-amber-200';
+      case 'pending': return 'text-gray-700 bg-gray-100 border-gray-200';
       default: return 'text-gray-700 bg-gray-100 border-gray-200';
-    }
-  };
-
-  const getPatronCategoryColor = (category) => {
-    switch (category) {
-      case 'student': return 'text-blue-700 bg-blue-100';
-      case 'faculty': return 'text-green-700 bg-green-100';
-      case 'staff': return 'text-amber-700 bg-amber-100';
-      case 'researcher': return 'text-indigo-700 bg-indigo-100';
-      case 'external': return 'text-purple-700 bg-purple-100';
-      default: return 'text-gray-700 bg-gray-100';
     }
   };
 
   const filteredRequests = requests.filter(request => {
     const matchesStatus = filterStatus === 'all' || request.status === filterStatus;
-    const matchesPatronCategory = filterPatronCategory === 'all' || request.patronCategory === filterPatronCategory;
     const matchesSearch = searchTerm === '' ||
       request.documentTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.authors.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.requesterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.department.toLowerCase().includes(searchTerm.toLowerCase());
+      request.publicationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.publisher.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesStatus && matchesPatronCategory && matchesSearch;
+    return matchesStatus && matchesSearch;
   });
 
   const formatDate = (dateString) => {
@@ -280,7 +211,6 @@ export default function ModernLibraryDashboard() {
               />
             </div>
 
-            {/* Navigation Links */}
             <div className="flex items-center space-x-6 text-gray-600">
               <Link to="/libraryRequest" className="hover:text-blue-600 transition-colors font-medium">
                 New Request
@@ -326,34 +256,34 @@ export default function ModernLibraryDashboard() {
               <div className="absolute inset-0 bg-gradient-to-r from-gray-400/10 to-gray-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-600 to-amber-700 rounded-2xl flex items-center justify-center shadow-lg">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.pending || 0}</div>
-                    <div className="text-sm text-gray-600">Pending Review</div>
+                    <div className="text-3xl font-bold text-gray-900">{statusCounts.processing || 0}</div>
+                    <div className="text-sm text-amber-700">Processing</div>
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-gray-500 to-gray-600 h-2 rounded-full" style={{ width: `${((statusCounts.pending || 0) / requests.length) * 100}%` }}></div>
+                <div className="w-full bg-amber-100 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-amber-300 to-amber-400 h-2 rounded-full" style={{ width: `${((statusCounts.processing || 0) / requests.length) * 100}%` }}></div>
                 </div>
               </div>
             </div>
 
             <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Activity className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Hourglass className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.processing || 0}</div>
-                    <div className="text-sm text-gray-600">Processing</div>
+                    <div className="text-3xl font-bold text-gray-900">{statusCounts.pending || 0}</div>
+                    <div className="text-sm text-gray-600">Pending</div>
                   </div>
                 </div>
-                <div className="w-full bg-amber-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-amber-500 to-orange-600 h-2 rounded-full" style={{ width: `${((statusCounts.processing || 0) / requests.length) * 100}%` }}></div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-gray-400 to-gray-500 h-2 rounded-full" style={{ width: `${((statusCounts.pending || 0) / requests.length) * 100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -366,12 +296,12 @@ export default function ModernLibraryDashboard() {
                     <Check className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.approved || 0}</div>
-                    <div className="text-sm text-gray-600">Approved</div>
+                    <div className="text-3xl font-bold text-gray-900">{statusCounts.accepted || 0}</div>
+                    <div className="text-sm text-gray-600">Accepted</div>
                   </div>
                 </div>
                 <div className="w-full bg-green-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style={{ width: `${((statusCounts.approved || 0) / requests.length) * 100}%` }}></div>
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style={{ width: `${((statusCounts.accepted || 0) / requests.length) * 100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -407,7 +337,7 @@ export default function ModernLibraryDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="group">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                 <select
@@ -416,26 +346,10 @@ export default function ModernLibraryDashboard() {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300 appearance-none"
                 >
                   <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
                   <option value="processing">Processing</option>
-                </select>
-              </div>
-
-              <div className="group">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-                <select
-                  value={filterPatronCategory}
-                  onChange={(e) => setFilterPatronCategory(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300 appearance-none"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="student">Student</option>
-                  <option value="faculty">Faculty</option>
-                  <option value="staff">Staff</option>
-                  <option value="researcher">Researcher</option>
-                  <option value="external">External</option>
+                  <option value="pending">Pending</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
 
@@ -474,7 +388,7 @@ export default function ModernLibraryDashboard() {
             <div>
               {filteredRequests.map((request, index) => (
                 <div
-                  key={request.id}
+                  key={request._id}
                   className="border-b border-gray-200/50 last:border-b-0 hover:bg-blue-50/30 transition-all duration-300"
                 >
                   {/* Desktop Layout */}
@@ -511,10 +425,7 @@ export default function ModernLibraryDashboard() {
 
                     {/* Requester Info */}
                     <div className="col-span-3">
-                      <div className="font-semibold text-gray-900">{request.requesterName}</div>
-                      <div className="text-sm text-gray-600">{request.rollEmployeeNo}</div>
-                      <div className="text-xs text-gray-500">{request.email}</div>
-                      <div className="text-xs text-gray-500">{request.department}</div>
+                      <div className="text-sm text-gray-600">{request.email}</div>
                       <div className="mt-2">
                         <span className={`text-xs font-medium px-3 py-2 rounded-full border ${getStatusColor(request.status)}`}>
                           {request.status}
@@ -522,28 +433,34 @@ export default function ModernLibraryDashboard() {
                       </div>
                     </div>
 
-                    <div className="text-xs text-gray-500">
+                    {/* Publication */}
+                    <div className="col-span-2 text-xs text-gray-500">
+                      {request.publicationName}
+                    </div>
+
+                    {/* Status */}
+                    <div className="col-span-1 text-xs text-gray-500">
                       {formatDate(request.requestedAt)}
                     </div>
 
-                    {/* Mobile Actions */}
-                    <div className="flex gap-2 pt-2">
+                    {/* Actions */}
+                    <div className="col-span-2 flex gap-2">
                       {request.status === 'pending' && (
                         <>
                           <button
-                            onClick={() => handleSetProcessing(request.id)}
+                            onClick={() => handleSetProcessing(request._id)}
                             className="flex-1 p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-200 transition-colors duration-200 text-sm font-medium"
                           >
                             Process
                           </button>
                           <button
-                            onClick={() => handleApprove(request.id)}
+                            onClick={() => handleApprove(request._id)}
                             className="flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors duration-200 text-sm font-medium"
                           >
-                            Approve
+                            Accept
                           </button>
                           <button
-                            onClick={() => handleReject(request.id)}
+                            onClick={() => handleReject(request._id)}
                             className="flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200 transition-colors duration-200 text-sm font-medium"
                           >
                             Reject
@@ -554,13 +471,13 @@ export default function ModernLibraryDashboard() {
                       {request.status === 'processing' && (
                         <>
                           <button
-                            onClick={() => handleApprove(request.id)}
+                            onClick={() => handleApprove(request._id)}
                             className="flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors duration-200 text-sm font-medium"
                           >
-                            Approve
+                            Accept
                           </button>
                           <button
-                            onClick={() => handleReject(request.id)}
+                            onClick={() => handleReject(request._id)}
                             className="flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200 transition-colors duration-200 text-sm font-medium"
                           >
                             Reject
@@ -568,7 +485,7 @@ export default function ModernLibraryDashboard() {
                         </>
                       )}
 
-                      {(request.status === 'approved' || request.status === 'rejected') && (
+                      {(request.status === 'accepted' || request.status === 'rejected') && (
                         <div className="flex-1 text-center text-sm text-gray-500 font-medium py-2">
                           Completed
                         </div>
@@ -613,7 +530,7 @@ export default function ModernLibraryDashboard() {
                 <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Multi-User Support</h3>
-              <p className="text-gray-600">Supporting students, faculty, researchers, and external users with comprehensive document access services.</p>
+              <p className="text-gray-600">Supporting users with comprehensive document access services.</p>
             </div>
           </div>
         </div>
