@@ -1,10 +1,15 @@
 export async function fetchWithAuth(url, options = {}) {
   let token = localStorage.getItem('token');
 
+  // If the request body is FormData, do NOT set Content-Type: the browser
+  // will add the correct multipart/form-data boundary automatically.
+  const isFormData = options && options.body instanceof FormData;
+
   const headers = {
     ...(options.headers || {}),
     Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
+    // Only set JSON content-type for non-FormData requests when not provided
+    ...(isFormData ? {} : { 'Content-Type': (options.headers && options.headers['Content-Type']) || 'application/json' }),
   };
 
   let response = await fetch(url, { ...options, headers });
@@ -25,17 +30,18 @@ export async function fetchWithAuth(url, options = {}) {
         localStorage.setItem('token', accessToken);
 
         // retry original request with new token
+        const isFormDataRetry = options && options.body instanceof FormData;
         const retryHeaders = {
           ...(options.headers || {}),
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+          ...(isFormDataRetry ? {} : { 'Content-Type': (options.headers && options.headers['Content-Type']) || 'application/json' }),
         };
 
         return fetch(url, { ...options, headers: retryHeaders });
       } else {
         // refresh also failed → log out user
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        // localStorage.removeItem('token');
+        // window.location.href = '/login';
         console.error('Session expired. Please log in again.');
       }
     }

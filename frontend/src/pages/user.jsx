@@ -95,6 +95,40 @@ const UserDashboard = () => {
         fetchRequests();
     }, [navigate]); // Ensure proper syntax for dependency array
 
+    // Handle file download
+    const handleDownload = async (fileId, documentTitle) => {
+        try {
+            const response = await fetchWithAuth(`http://localhost:5000/api/requests/file/${fileId}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to download file');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${documentTitle}.pdf` || 'document.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            setStatus('File downloaded successfully');
+            setTimeout(() => setStatus(''), 3000);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            setStatus(`Failed to download file: ${error.message}`);
+            setTimeout(() => setStatus(''), 4000);
+        }
+    };
+
     const getStatusColor = (status) => {
         const colors = {
             processing: 'bg-orange-100 text-orange-800',
@@ -312,14 +346,18 @@ const UserDashboard = () => {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center space-x-3">
-                                                    <button className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
-                                                        <Eye className="w-5 h-5" />
+                                                    <button
+                                                        onClick={request.status === 'accepted' && request.pdfFileId ? () => handleDownload(request.pdfFileId, request.documentTitle) : undefined}
+                                                        disabled={request.status !== 'accepted' || !request.pdfFileId}
+                                                        className={`p-3 rounded-xl transition-all duration-300 border border-gray-200 ${
+                                                            request.status === 'accepted' && request.pdfFileId
+                                                                ? 'text-gray-500 hover:text-green-600 hover:bg-green-50 hover:border-green-300 cursor-pointer'
+                                                                : 'text-gray-300 bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed'
+                                                        }`}
+                                                        title={request.status !== 'accepted' ? 'Download available only for accepted requests' : !request.pdfFileId ? 'No file available' : 'Download PDF'}
+                                                    >
+                                                        <Download className="w-5 h-5" />
                                                     </button>
-                                                    {request.status === 'completed' && (
-                                                        <button className="p-3 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all duration-300 border border-gray-200 hover:border-green-300">
-                                                            <Download className="w-5 h-5" />
-                                                        </button>
-                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -341,35 +379,6 @@ const UserDashboard = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Quick Stats */}
-                        {/* <div className="mt-12 grid md:grid-cols-3 gap-6">
-                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                    <Package className="w-8 h-8 text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Total Requests</h3>
-                                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{requests.length}</p>
-                            </div>
-                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                    <CheckCircle className="w-8 h-8 text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Completed</h3>
-                                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                    {requests.filter(r => r.status === 'completed').length}
-                                </p>
-                            </div>
-                            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                    <Clock className="w-8 h-8 text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">In Progress</h3>
-                                <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
-                                    {requests.filter(r => r.status !== 'completed').length}
-                                </p>
-                            </div>
-                        </div> */}
                 </div>
             </main>
 

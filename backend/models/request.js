@@ -13,7 +13,9 @@ const requestSchema = new mongoose.Schema({
   publisher: { type: String, required: true },
   metaId: { type: String },
   status: { type: String, enum: ['processing', 'arrived', 'accepted', 'rejected', 'pending'], default: 'pending' },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  pdfFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'fs.files' }, // Reference to GridFS file
+  rejectReason: { type: String }
 }); 
 
 module.exports = mongoose.model('Request', requestSchema);

@@ -205,9 +205,10 @@ const refreshToken = async (req, res) => {
     const accessToken = createAccessToken(newPayload);
     const newRefreshToken = createRefreshToken(newPayload);
 
-    user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== token);
-    user.refreshTokens.push({ token: newRefreshToken });
-    await user.save();
+    // Sequential atomic updates (no conflicts)
+    await User.findByIdAndUpdate(user._id, { $pull: { refreshTokens: { token } } });
+    await User.findByIdAndUpdate(user._id, { $push: { refreshTokens: { token: newRefreshToken } } });
+
 
     sendRefreshTokenCookie(res, newRefreshToken);
 

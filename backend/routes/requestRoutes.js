@@ -5,12 +5,17 @@ const { submitRequest } = require('../controllers/requestController');
 const { fetchRequest } = require('../controllers/requestController');
 const { fetchAllRequest } = require('../controllers/requestController');
 const { updateRequestStatus} = require('../controllers/requestController');
+const {getFile} = require('../controllers/requestController');
 const { verifyAccessToken} = require('../middlewares/auth');
+const { memoryUpload } = require('../config/gridfs');
+
 
 router.post('/submit', verifyAccessToken, submitRequest);
 router.get('/', verifyAccessToken, fetchRequest);
 router.get('/all', verifyAccessToken, fetchAllRequest);
-router.patch('/:id', verifyAccessToken, updateRequestStatus); // New endpoint for status updates
+router.patch('/:id', verifyAccessToken, memoryUpload.single('pdf'), updateRequestStatus);
+
+router.get('/file/:fileId',getFile);
 
 
 module.exports = router;

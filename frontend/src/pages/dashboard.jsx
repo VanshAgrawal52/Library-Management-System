@@ -8,8 +8,22 @@ export default function ModernLibraryDashboard() {
   const [requests, setRequests] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [pdfFile, setPdfFile] = useState(null);
 
-  // Check for token and fetch requests on component mount
+  const rejectionReasons = [
+    'Already Subscribed',
+    'Available',
+    'Open Access',
+    'Not Available',
+    'Invalid Request',
+  ];
+
+  const user = localStorage.getItem('user');
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -27,6 +41,11 @@ export default function ModernLibraryDashboard() {
         return;
       }
 
+      if(user?.role !== 'admin'){
+        navigate("/user");
+        return;
+      }
+
       const response = await fetchWithAuth("http://localhost:5000/api/requests/all", {
         method: "GET",
         headers: {
@@ -40,7 +59,6 @@ export default function ModernLibraryDashboard() {
       }
 
       const data = await response.json();
-      // Map createdAt to requestedAt for frontend compatibility
       const transformedData = data.map(request => ({
         ...request,
         requestedAt: request.createdAt,
@@ -75,23 +93,38 @@ export default function ModernLibraryDashboard() {
     }
   };
 
-  // Admin actions
   const handleApprove = async (requestId) => {
+    setSelectedRequestId(requestId);
+    setShowApproveModal(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!pdfFile) {
+      alert('Please upload a PDF file.');
+      return;
+    }
+
     try {
-      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
+      const formData = new FormData();
+      formData.append('status', 'accepted');
+      formData.append('pdf', pdfFile);
+
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${selectedRequestId}`, {
         method: 'PATCH',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ status: 'accepted' }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update status');
       }
 
-      await fetchRequests(); // Refresh the list
+      await fetchRequests();
+      setShowApproveModal(false);
+      setPdfFile(null);
+      setSelectedRequestId(null);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to accepted. Please try again.');
@@ -99,21 +132,34 @@ export default function ModernLibraryDashboard() {
   };
 
   const handleReject = async (requestId) => {
+    setSelectedRequestId(requestId);
+    setShowRejectModal(true);
+  };
+
+  const confirmReject = async () => {
+    if (!rejectReason) {
+      alert('Please select a rejection reason.');
+      return;
+    }
+
     try {
-      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/${selectedRequestId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ status: 'rejected' }),
+        body: JSON.stringify({ status: 'rejected', rejectReason }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update status');
       }
 
-      await fetchRequests(); // Refresh the list
+      await fetchRequests();
+      setShowRejectModal(false);
+      setRejectReason('');
+      setSelectedRequestId(null);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to rejected. Please try again.');
@@ -135,7 +181,7 @@ export default function ModernLibraryDashboard() {
         throw new Error('Failed to update status');
       }
 
-      await fetchRequests(); // Refresh the list
+      await fetchRequests();
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to processing. Please try again.');
@@ -174,7 +220,6 @@ export default function ModernLibraryDashboard() {
     });
   };
 
-  // Get counts for status overview
   const statusCounts = requests.reduce((acc, request) => {
     acc[request.status] = (acc[request.status] || 0) + 1;
     return acc;
@@ -198,7 +243,6 @@ export default function ModernLibraryDashboard() {
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LibraryX Admin</span>
           </div>
-
           <div className="hidden md:flex items-center space-x-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -210,22 +254,11 @@ export default function ModernLibraryDashboard() {
                 className="pl-10 pr-4 py-2 w-64 rounded-full border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
               />
             </div>
-
             <div className="flex items-center space-x-6 text-gray-600">
-              <Link to="/libraryRequest" className="hover:text-blue-600 transition-colors font-medium">
-                New Request
-              </Link>
-              <Link to="/analytics" className="hover:text-blue-600 transition-colors font-medium">
-                Analytics
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="hover:text-blue-600 transition-colors font-medium"
-              >
-                Logout
-              </button>
+              <Link to="/" className="hover:text-blue-600 transition-colors font-medium">New Request</Link>
+              <Link to="/analytics" className="hover:text-blue-600 transition-colors font-medium">Analytics</Link>
+              <button onClick={handleLogout} className="hover:text-blue-600 transition-colors font-medium">Logout</button>
             </div>
-
             <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
               <User className="w-5 h-5 text-white" />
             </div>
@@ -236,7 +269,6 @@ export default function ModernLibraryDashboard() {
       {/* Main Content */}
       <main className="relative z-10 py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <Activity className="w-4 h-4" />
@@ -249,8 +281,6 @@ export default function ModernLibraryDashboard() {
               Review and manage document requests from users across the institution
             </p>
           </div>
-
-          {/* Status Overview Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-400/10 to-gray-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -269,7 +299,6 @@ export default function ModernLibraryDashboard() {
                 </div>
               </div>
             </div>
-
             <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
@@ -287,7 +316,6 @@ export default function ModernLibraryDashboard() {
                 </div>
               </div>
             </div>
-
             <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
@@ -305,7 +333,6 @@ export default function ModernLibraryDashboard() {
                 </div>
               </div>
             </div>
-
             <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-red-400/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
@@ -324,8 +351,6 @@ export default function ModernLibraryDashboard() {
               </div>
             </div>
           </div>
-
-          {/* Filters Section */}
           <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 mb-8">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -336,7 +361,6 @@ export default function ModernLibraryDashboard() {
                 <p className="text-gray-600">Refine your view</p>
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="group">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
@@ -352,7 +376,6 @@ export default function ModernLibraryDashboard() {
                   <option value="rejected">Rejected</option>
                 </select>
               </div>
-
               <div className="flex items-end">
                 <div className="text-lg font-semibold text-gray-900">
                   {filteredRequests.length} of {requests.length} requests
@@ -360,8 +383,6 @@ export default function ModernLibraryDashboard() {
               </div>
             </div>
           </div>
-
-          {/* Requests Table */}
           <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 overflow-hidden">
             <div className="p-6 border-b border-gray-200/50">
               <div className="flex items-center space-x-3">
@@ -374,8 +395,6 @@ export default function ModernLibraryDashboard() {
                 </div>
               </div>
             </div>
-
-            {/* Table Header - Hidden on mobile */}
             <div className="hidden lg:grid lg:grid-cols-12 gap-4 p-6 bg-gray-50/50 border-b border-gray-200/50 text-sm font-semibold text-gray-700 uppercase tracking-wider">
               <div className="col-span-4">Document Details</div>
               <div className="col-span-3">Requester Info</div>
@@ -383,34 +402,31 @@ export default function ModernLibraryDashboard() {
               <div className="col-span-1">Status</div>
               <div className="col-span-2">Actions</div>
             </div>
-
-            {/* Table Body */}
             <div>
               {filteredRequests.map((request, index) => (
                 <div
                   key={request._id}
                   className="border-b border-gray-200/50 last:border-b-0 hover:bg-blue-50/30 transition-all duration-300"
                 >
-                  {/* Desktop Layout */}
                   <div className="hidden lg:grid lg:grid-cols-12 gap-4 p-6 items-center">
-                    {/* Document Details */}
                     <div className="col-span-4">
-                      <div className="font-semibold text-gray-900 mb-1 line-clamp-2">
-                        {request.documentTitle}
-                      </div>
-                      <div className="text-sm text-gray-600 mb-1">
-                        by {request.authors}
-                      </div>
+                      <div className="font-semibold text-gray-900 mb-1 line-clamp-2">{request.documentTitle}</div>
+                      <div className="text-sm text-gray-600 mb-1">by {request.authors}</div>
                       <div className="text-xs text-gray-500 flex items-center gap-2">
                         <span>{request.publisher} • {request.publicationYear}</span>
                         {request.sourceUrl && (
+                          <a href={request.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 transition-colors">
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                        {request.pdfFileId && request.status === 'accepted' && (
                           <a
-                            href={request.sourceUrl}
+                            href={`http://localhost:5000/api/requests/file/${request.pdfFileId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-700 transition-colors"
                           >
-                            <ExternalLink className="w-3 h-3" />
+                            <FileText className="w-3 h-3" /> View PDF
                           </a>
                         )}
                       </div>
@@ -422,28 +438,14 @@ export default function ModernLibraryDashboard() {
                         </div>
                       )}
                     </div>
-
-                    {/* Requester Info */}
                     <div className="col-span-3">
                       <div className="text-sm text-gray-600">{request.email}</div>
                       <div className="mt-2">
-                        <span className={`text-xs font-medium px-3 py-2 rounded-full border ${getStatusColor(request.status)}`}>
-                          {request.status}
-                        </span>
+                        <span className={`text-xs font-medium px-3 py-2 rounded-full border ${getStatusColor(request.status)}`}>{request.status}</span>
                       </div>
                     </div>
-
-                    {/* Publication */}
-                    <div className="col-span-2 text-xs text-gray-500">
-                      {request.publicationName}
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-span-1 text-xs text-gray-500">
-                      {formatDate(request.requestedAt)}
-                    </div>
-
-                    {/* Actions */}
+                    <div className="col-span-2 text-xs text-gray-500">{request.publicationName}</div>
+                    <div className="col-span-1 text-xs text-gray-500">{formatDate(request.requestedAt)}</div>
                     <div className="col-span-2 flex gap-2">
                       {request.status === 'pending' && (
                         <>
@@ -467,7 +469,6 @@ export default function ModernLibraryDashboard() {
                           </button>
                         </>
                       )}
-
                       {request.status === 'processing' && (
                         <>
                           <button
@@ -484,18 +485,14 @@ export default function ModernLibraryDashboard() {
                           </button>
                         </>
                       )}
-
                       {(request.status === 'accepted' || request.status === 'rejected') && (
-                        <div className="flex-1 text-center text-sm text-gray-500 font-medium py-2">
-                          Completed
-                        </div>
+                        <div className="flex-1 text-center text-sm text-gray-500 font-medium py-2">Completed</div>
                       )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
             {filteredRequests.length === 0 && (
               <div className="p-12 text-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -506,8 +503,6 @@ export default function ModernLibraryDashboard() {
               </div>
             )}
           </div>
-
-          {/* Quick Stats Section */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -516,7 +511,6 @@ export default function ModernLibraryDashboard() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Document Types</h3>
               <p className="text-gray-600">Managing journal articles, books, conference papers, and research documents from various academic sources.</p>
             </div>
-
             <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <TrendingUp className="w-8 h-8 text-white" />
@@ -524,7 +518,6 @@ export default function ModernLibraryDashboard() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Processing</h3>
               <p className="text-gray-600">Streamlined workflow ensures most document requests are processed and delivered within 2-3 business days.</p>
             </div>
-
             <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Users className="w-8 h-8 text-white" />
@@ -536,18 +529,82 @@ export default function ModernLibraryDashboard() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Approval Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Upload PDF for Approval</h3>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setPdfFile(e.target.files[0])}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 mb-4"
+            />
+            <div className="flex gap-4">
+              <button
+                onClick={confirmApprove}
+                className="flex-1 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+              >
+                Confirm Approval
+              </button>
+              <button
+                onClick={() => {
+                  setShowApproveModal(false);
+                  setPdfFile(null);
+                  setSelectedRequestId(null);
+                }}
+                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejection Reason Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Select Rejection Reason</h3>
+            <select
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 mb-4"
+            >
+              <option value="">Select a reason</option>
+              {rejectionReasons.map((reason) => (
+                <option key={reason} value={reason}>{reason}</option>
+              ))}
+            </select>
+            <div className="flex gap-4">
+              <button
+                onClick={confirmReject}
+                className="flex-1 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium"
+              >
+                Confirm Rejection
+              </button>
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setSelectedRequestId(null);
+                }}
+                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="relative z-10 bg-white/80 backdrop-blur-sm border-t border-white/20 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="text-gray-600">© 2025 LibraryX. All rights reserved.</div>
           <div className="flex items-center space-x-3 text-gray-600">
             <span>Built with ❤️ by</span>
-            <a
-              href="#"
-              className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              Kavya
-            </a>
+            <a href="#" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">Kavya</a>
             <Github className="w-4 h-4 text-gray-400" />
           </div>
         </div>

@@ -13,8 +13,10 @@ const requestSchema = new Schema({
   pageRange: { type: String },
   sourceUrl: { type: String, required: true },
   publisher: { type: String, required: true },
-  status: { type: String, enum: ['processing', 'arrived', 'accepted', 'rejected','pending'], default: 'pending' },
-  createdAt: { type: Date, default: Date.now }
+  status: { type: String, enum: ['processing', 'arrived', 'accepted', 'rejected', 'pending'], default: 'pending' },
+  createdAt: { type: Date, default: Date.now },
+  pdfFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'fs.files' }, // Reference to GridFS file
+  rejectReason: { type: String }
 });
 
 const userSchema = new Schema({

@@ -8,6 +8,7 @@ import User from './pages/user.jsx';
 import Register from './pages/register.jsx';
 import Navbar from "./components/navbar.jsx";
 import HideRoute from './components/hideRoutes.jsx';
+import AdminPanel from './pages/adminPanel.jsx';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/user" element={<User />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/adminPanel" element={<AdminPanel />} />
       </Routes>
     </Router>
   );
