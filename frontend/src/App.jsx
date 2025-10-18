@@ -9,6 +9,7 @@ import Register from './pages/register.jsx';
 import Navbar from "./components/navbar.jsx";
 import HideRoute from './components/hideRoutes.jsx';
 import AdminPanel from './pages/adminPanel.jsx';
+import ForgotPasswordPage from './pages/forgetPasswordPage.jsx';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/adminPanel" element={<AdminPanel />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Routes>
     </Router>
   );

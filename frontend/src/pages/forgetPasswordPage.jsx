@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn, BookOpen, Github, Shield, Users, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Shield, Github } from 'lucide-react';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState('login'); // 'login' or 'otp'
+  const [step, setStep] = useState('email'); // 'email' or 'reset'
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    newPassword: ''
   });
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,11 +22,11 @@ export default function LoginPage() {
     }));
   };
 
-  const handleLogin = async (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      setStatus('Please fill in all fields');
+    if (!formData.email) {
+      setStatus('Please enter your email address');
       setTimeout(() => setStatus(''), 4000);
       return;
     }
@@ -40,20 +40,20 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        body: JSON.stringify({ email: formData.email }),
         credentials: 'include',
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setStep("otp");
+        setStep("reset");
         setStatus("OTP sent to your email successfully!");
       } else {
-        setStatus(data.message || "Login failed");
+        setStatus(data.message || "Failed to send OTP");
       }
     } catch (err) {
       setStatus("Something went wrong");
@@ -84,7 +84,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleVerifyOtp = async (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     const otpString = otp.join('');
 
@@ -94,27 +94,30 @@ export default function LoginPage() {
       return;
     }
 
+    if (!formData.newPassword) {
+      setStatus('Please enter a new password');
+      setTimeout(() => setStatus(''), 4000);
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const res = await fetch("http://localhost:5000/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, otp: otpString }),
+        body: JSON.stringify({ email: formData.email, otp: otpString, newPassword: formData.newPassword }),
         credentials: 'include',
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", data.accessToken); // Save JWT
-        localStorage.setItem("user", JSON.stringify(data.user)) // Save user info
-        console.log("Token:", data.accessToken); // Log the token to the console
-        setStatus("Login successful! Welcome back!");
+        setStatus("Password reset successful! Redirecting to login...");
         setTimeout(() => {
-          navigate("/user"); // redirect after login
+          navigate("/login");
         }, 1500);
       } else {
-        setStatus(data.message || "Invalid OTP");
+        setStatus(data.message || "Invalid OTP or failed to reset password");
       }
     } catch (err) {
       setStatus("Something went wrong");
@@ -124,11 +127,11 @@ export default function LoginPage() {
     }
   };
 
-  const resendOtp = async () => {
+  const handleResendOtp = async () => {
     setOtp(['', '', '', '', '', '']); // reset inputs
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/resend-otp", {
+      const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email }),
@@ -164,36 +167,35 @@ export default function LoginPage() {
           {/* Header Section */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <LogIn className="w-4 h-4" />
-              <span>{step === 'login' ? 'Account Login' : 'Email Verification'}</span>
+              <Shield className="w-4 h-4" />
+              <span>{step === 'email' ? 'Reset Password' : 'Verify OTP'}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              {step === 'login' ? (
-                <>Welcome <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Back</span></>
+              {step === 'email' ? (
+                <>Reset Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Password</span></>
               ) : (
                 <>Verify Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Email</span></>
               )}
             </h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto">
-              {step === 'login'
-                ? 'Sign in to your LibraryX account and continue your research journey.'
-                : `We've sent a 6-digit verification code to ${formData.email}`
-              }
+              {step === 'email'
+                ? 'Enter your email address to receive a verification code.'
+                : `We've sent a 6-digit verification code to ${formData.email}`}
             </p>
           </div>
 
-          {/* Login/OTP Form Container */}
+          {/* Forgot Password/OTP Form Container */}
           <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
-            {step === 'login' ? (
-              // Login Form
+            {step === 'email' ? (
+              // Email Form
               <div className="space-y-6">
                 <div className="flex items-center space-x-3 mb-8">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <LogIn className="w-6 h-6 text-white" />
+                    <Mail className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
-                    <p className="text-gray-600">Access your account</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
+                    <p className="text-gray-600">Enter your email to reset your password</p>
                   </div>
                 </div>
 
@@ -213,44 +215,11 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Password Field */}
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                      placeholder="Enter your password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => navigate("/forgot-password")}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
-                {/* Login Button */}
+                {/* Submit Button */}
                 <button
-                  onClick={handleLogin}
-                  disabled={loading || !formData.email || !formData.password}
-                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || !formData.email || !formData.password
+                  onClick={handleForgotPassword}
+                  disabled={loading || !formData.email}
+                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || !formData.email
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg'
                     }`}
@@ -258,33 +227,33 @@ export default function LoginPage() {
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Signing in...</span>
+                      <span>Sending OTP...</span>
                     </>
                   ) : (
                     <>
-                      <LogIn className="w-5 h-5" />
-                      <span>Sign In</span>
+                      <Mail className="w-5 h-5" />
+                      <span>Send OTP</span>
                     </>
                   )}
                 </button>
 
-                {/* Register Link */}
+                {/* Back to Login Link */}
                 <div className="text-center text-gray-600">
-                  Don't have an account?{' '}
+                  Remember your password?{' '}
                   <button
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/login")}
                     className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                   >
-                    Create one here
+                    Sign in here
                   </button>
                 </div>
               </div>
             ) : (
-              // OTP Verification Form
+              // OTP and New Password Form
               <div className="space-y-6">
                 <div className="flex items-center space-x-3 mb-8">
                   <button
-                    onClick={() => setStep('login')}
+                    onClick={() => setStep('email')}
                     className="w-10 h-10 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm flex items-center justify-center hover:border-blue-300 transition-all duration-300 mr-2"
                   >
                     <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -293,8 +262,8 @@ export default function LoginPage() {
                     <Shield className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Verify Email</h2>
-                    <p className="text-gray-600">Enter the verification code</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Verify OTP</h2>
+                    <p className="text-gray-600">Enter the code and new password</p>
                   </div>
                 </div>
 
@@ -319,11 +288,34 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Verify Button */}
+                {/* New Password Field */}
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Password *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="newPassword"
+                      value={formData.newPassword}
+                      onChange={handleInputChange}
+                      className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                      placeholder="Enter your new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reset Password Button */}
                 <button
-                  onClick={handleVerifyOtp}
-                  disabled={loading || otp.join('').length !== 6}
-                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || otp.join('').length !== 6
+                  onClick={handleResetPassword}
+                  disabled={loading || otp.join('').length !== 6 || !formData.newPassword}
+                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || otp.join('').length !== 6 || !formData.newPassword
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg'
                     }`}
@@ -331,21 +323,21 @@ export default function LoginPage() {
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Verifying...</span>
+                      <span>Resetting Password...</span>
                     </>
                   ) : (
                     <>
                       <Shield className="w-5 h-5" />
-                      <span>Verify Code</span>
+                      <span>Reset Password</span>
                     </>
                   )}
                 </button>
 
-                {/* Resend Link */}
+                {/* Resend OTP Link */}
                 <div className="text-center text-gray-600">
                   Didn't receive the code?{' '}
                   <button
-                    onClick={resendOtp}
+                    onClick={handleResendOtp}
                     className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                   >
                     Resend OTP
@@ -363,40 +355,15 @@ export default function LoginPage() {
                   : 'bg-red-50 border-red-200 text-red-800'
                 }`}>
                 {status.includes('successful') ? (
-                  <LogIn className="w-5 h-5 flex-shrink-0" />
-                ) : status.includes('sent') ? (
                   <Shield className="w-5 h-5 flex-shrink-0" />
+                ) : status.includes('sent') ? (
+                  <Mail className="w-5 h-5 flex-shrink-0" />
                 ) : (
                   <Mail className="w-5 h-5 flex-shrink-0" />
                 )}
                 <span className="font-medium">{status}</span>
               </div>
             )}
-          </div>
-
-          {/* Features Section */}
-          <div className="mt-12 grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Secure Login</h3>
-              <p className="text-sm text-gray-600">Two-factor authentication keeps your account safe and secure.</p>
-            </div>
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Quick Access</h3>
-              <p className="text-sm text-gray-600">Instant access to your bookmarks, requests, and research materials.</p>
-            </div>
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Personalized</h3>
-              <p className="text-sm text-gray-600">Customized experience based on your research interests and history.</p>
-            </div>
           </div>
         </div>
       </main>

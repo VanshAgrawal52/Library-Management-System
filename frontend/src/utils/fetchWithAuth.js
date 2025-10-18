@@ -40,8 +40,8 @@ export async function fetchWithAuth(url, options = {}) {
         return fetch(url, { ...options, headers: retryHeaders });
       } else {
         // refresh also failed → log out user
-        // localStorage.removeItem('token');
-        // window.location.href = '/login';
+        localStorage.removeItem('token');
+        window.location.href = '/login';
         console.error('Session expired. Please log in again.');
       }
     }

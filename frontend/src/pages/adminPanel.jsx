@@ -160,7 +160,7 @@ const AdminPanel = () => {
 
                         {/* Navigation Links */}
                         <div className="flex items-center space-x-6 text-gray-600">
-                            <Link to="/" className="hover:text-blue-600 transition-colors font-medium">
+                            <Link to="/dashboard" className="hover:text-blue-600 transition-colors font-medium">
                                 Dashboard
                             </Link>
                             <button

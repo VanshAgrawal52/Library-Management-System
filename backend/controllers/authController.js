@@ -4,16 +4,6 @@ const User = require('../models/User');
 const { createAccessToken, createRefreshToken } = require('../utils/token');
 const transporter = require('../controllers/mailControllers');
 
-// send cookie with refresh token
-// const sendRefreshTokenCookie = (res, token) => {
-//   res.cookie('jid', token, {
-//     httpOnly: true,
-//     // secure: process.env.NODE_ENV === 'production',
-//     secure: false, // no HTTPS locally
-//     // sameSite: 'lax',
-//     sameSite: 'none',    // allow cross-site (5173 → 5000)
-//   });
-// };
 const sendRefreshTokenCookie = (res, token) => {
   console.log('Setting jid cookie:', token);
   res.cookie('jid', token, {
@@ -130,6 +120,9 @@ const verify_otp = async (req, res) => {
     user.otp = null;
     user.otpExpires = null;
 
+    // Invalidate all refresh tokens to force re-login on other devices
+    user.refreshTokens = [];
+
     const payload = { id: user._id.toString(), email: user.email, role: user.role, name: user.name, rollNo: user.rollNo, department: user.department };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
@@ -179,6 +172,76 @@ const resend_otp = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// FORGOT PASSWORD
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = await bcrypt.hash(otp, 10);
+    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
+    await user.save();
+
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Password Reset OTP",
+        text: `Your OTP for password reset is ${otp}. It will expire in 5 minutes.`
+      });
+    } catch (mailErr) {
+      user.otp = null;
+      user.otpExpires = null;
+      await user.save();
+      return res.status(500).json({ message: "Failed to send OTP" });
+    }
+
+    res.json({ message: "OTP sent to email for password reset" });
+  } catch (error) {
+    console.error("forgotPassword error", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// RESET PASSWORD
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isOtpValid = await bcrypt.compare(otp, user.otp || "");
+    if (!isOtpValid || Date.now() > user.otpExpires) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    // Invalidate all refresh tokens to force re-login
+    user.refreshTokens = [];
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("resetPassword error", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -243,4 +306,4 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { register, login, refreshToken, verify_otp, resend_otp, logout };
+module.exports = { register, login, refreshToken, verify_otp, resend_otp, logout, forgotPassword, resetPassword };

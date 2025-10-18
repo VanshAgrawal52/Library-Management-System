@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Eye, Download, Clock, CheckCircle, Truck, Package, MapPin, User, BookOpen, Users, Hourglass,X } from 'lucide-react';
+import { Search, Eye, Download, Clock, CheckCircle, Truck, Package, MapPin, User, BookOpen, Users, Hourglass, X } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom"; // if you’re using React Router
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 
@@ -204,9 +204,13 @@ const UserDashboard = () => {
                             <Link to="/" className="hover:text-blue-600 transition-colors font-medium">
                                 New Request
                             </Link>
-                            <Link to="/bookmarks" className="hover:text-blue-600 transition-colors font-medium">
-                                Bookmarks
-                            </Link>
+
+                            {/* Conditionally show Dashboard for admin */}
+                            {user?.role === 'admin' && (
+                                <Link to="/dashboard" className="hover:text-blue-600 transition-colors font-medium">
+                                    Dashboard
+                                </Link>
+                            )}
                             <button
                                 onClick={handleLogout}
                                 className="hover:text-blue-600 transition-colors font-medium"
@@ -349,11 +353,10 @@ const UserDashboard = () => {
                                                     <button
                                                         onClick={request.status === 'accepted' && request.pdfFileId ? () => handleDownload(request.pdfFileId, request.documentTitle) : undefined}
                                                         disabled={request.status !== 'accepted' || !request.pdfFileId}
-                                                        className={`p-3 rounded-xl transition-all duration-300 border border-gray-200 ${
-                                                            request.status === 'accepted' && request.pdfFileId
+                                                        className={`p-3 rounded-xl transition-all duration-300 border border-gray-200 ${request.status === 'accepted' && request.pdfFileId
                                                                 ? 'text-gray-500 hover:text-green-600 hover:bg-green-50 hover:border-green-300 cursor-pointer'
                                                                 : 'text-gray-300 bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed'
-                                                        }`}
+                                                            }`}
                                                         title={request.status !== 'accepted' ? 'Download available only for accepted requests' : !request.pdfFileId ? 'No file available' : 'Download PDF'}
                                                     >
                                                         <Download className="w-5 h-5" />

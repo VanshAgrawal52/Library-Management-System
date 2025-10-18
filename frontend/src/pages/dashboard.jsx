@@ -22,7 +22,7 @@ export default function ModernLibraryDashboard() {
     'Invalid Request',
   ];
 
-  const user = localStorage.getItem('user');
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -41,8 +41,8 @@ export default function ModernLibraryDashboard() {
         return;
       }
 
-      if(user?.role !== 'admin'){
-        navigate("/user");
+      if (user?.role !== 'admin') {
+        // navigate("/user");
         return;
       }
 
@@ -256,6 +256,9 @@ export default function ModernLibraryDashboard() {
             </div>
             <div className="flex items-center space-x-6 text-gray-600">
               <Link to="/" className="hover:text-blue-600 transition-colors font-medium">New Request</Link>
+              <Link to="/adminPanel" className="hover:text-blue-600 transition-colors font-medium">
+                Admin Panel
+              </Link>
               <Link to="/analytics" className="hover:text-blue-600 transition-colors font-medium">Analytics</Link>
               <button onClick={handleLogout} className="hover:text-blue-600 transition-colors font-medium">Logout</button>
             </div>
