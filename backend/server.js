@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const requestRoutes = require('./routes/requestRoutes');
+const analyticsRoutes = require('./routes/analytics');
 const { verifyAccessToken } = require('./middlewares/auth');
 const bodyParser = require('body-parser');
 
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 
 // Debug log incoming requests
 app.use((req, res, next) => {
-  console.log(`Request URL: ${req.url}, Content-Type: ${req.get('Content-Type')}`);
+  // console.log(`Request URL: ${req.url}, Content-Type: ${req.get('Content-Type')}`);
   next();
 });
 
@@ -30,7 +31,7 @@ app.use(cors({
 app.use((req, res, next) => {
   const contentType = req.headers['content-type'] || '';
   if (contentType.startsWith('multipart/form-data')) {
-    console.log('⚠️ Skipping JSON body parsing for multipart request');
+    // console.log('⚠️ Skipping JSON body parsing for multipart request');
     return next();
   }
 
@@ -51,6 +52,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', analyticsRoutes);
 
 // Example protected route
 app.get('/api/protected', verifyAccessToken, (req, res) => {

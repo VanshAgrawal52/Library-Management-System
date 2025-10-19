@@ -31,4 +31,24 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers , updateUserRole };
+const checkAdmin = async (req, res) => {
+  try {
+    // verifyToken middleware should have set req.user from the JWT
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({ isAdmin: false, message: 'Access denied' });
+    }
+
+    res.json({ isAdmin: true });
+  } catch (error) {
+    console.error('Error checking admin:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { getAllUsers , updateUserRole, checkAdmin };

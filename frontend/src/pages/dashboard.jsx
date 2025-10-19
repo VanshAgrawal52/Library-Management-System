@@ -13,6 +13,10 @@ export default function ModernLibraryDashboard() {
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [pdfFile, setPdfFile] = useState(null);
+  // per-request loading flags
+  const [processingLoading, setProcessingLoading] = useState({});
+  const [approveLoading, setApproveLoading] = useState({});
+  const [rejectLoading, setRejectLoading] = useState({});
 
   const rejectionReasons = [
     'Already Subscribed',
@@ -22,27 +26,49 @@ export default function ModernLibraryDashboard() {
     'Invalid Request',
   ];
 
-  const user = JSON.parse(localStorage.getItem('user'));
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    fetchRequests();
-  }, [navigate]);
-
-  const fetchRequests = async () => {
-    try {
+    const verifyAdmin = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
       }
 
-      if (user?.role !== 'admin') {
-        // navigate("/user");
+      try {
+        const response = await fetchWithAuth("http://localhost:5000/api/admin/check-admin", {
+          method: "GET",
+        });
+
+        if (response.status === 403) {
+          navigate("/user");
+          return;
+        } else if (!response.ok) {
+          throw new Error(`Error verifying admin: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.isAdmin) {
+          navigate("/user");
+          return;
+        }
+
+        // Only fetch requests after successful admin verification
+        fetchRequests();
+      } catch (error) {
+        console.error("Error verifying admin:", error);
+        navigate("/login");
+      }
+    };
+
+    verifyAdmin();
+  }, [navigate]);
+
+
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
         return;
       }
 
@@ -104,6 +130,9 @@ export default function ModernLibraryDashboard() {
       return;
     }
 
+    // set loading for approve button on this request
+    setApproveLoading(prev => ({ ...prev, [selectedRequestId]: true }));
+
     try {
       const formData = new FormData();
       formData.append('status', 'accepted');
@@ -128,6 +157,9 @@ export default function ModernLibraryDashboard() {
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to accepted. Please try again.');
+    } finally {
+      // clear loading
+      setApproveLoading(prev => { const copy = { ...prev }; delete copy[selectedRequestId]; return copy; });
     }
   };
 
@@ -141,6 +173,9 @@ export default function ModernLibraryDashboard() {
       alert('Please select a rejection reason.');
       return;
     }
+
+    // set loading for reject button on this request
+    setRejectLoading(prev => ({ ...prev, [selectedRequestId]: true }));
 
     try {
       const response = await fetchWithAuth(`http://localhost:5000/api/requests/${selectedRequestId}`, {
@@ -163,10 +198,16 @@ export default function ModernLibraryDashboard() {
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to rejected. Please try again.');
+    } finally {
+      // clear loading
+      setRejectLoading(prev => { const copy = { ...prev }; delete copy[selectedRequestId]; return copy; });
     }
   };
 
   const handleSetProcessing = async (requestId) => {
+    // set loading for processing button on this request
+    setProcessingLoading(prev => ({ ...prev, [requestId]: true }));
+
     try {
       const response = await fetchWithAuth(`http://localhost:5000/api/requests/${requestId}`, {
         method: 'PATCH',
@@ -185,6 +226,9 @@ export default function ModernLibraryDashboard() {
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to processing. Please try again.');
+    } finally {
+      // clear loading
+      setProcessingLoading(prev => { const copy = { ...prev }; delete copy[requestId]; return copy; });
     }
   };
 
@@ -450,27 +494,45 @@ export default function ModernLibraryDashboard() {
                     <div className="col-span-2 text-xs text-gray-500">{request.publicationName}</div>
                     <div className="col-span-1 text-xs text-gray-500">{formatDate(request.requestedAt)}</div>
                     <div className="col-span-2 flex gap-2">
-                      {request.status === 'pending' && (
+                          {request.status === 'pending' && (
                         <>
-                          <button
-                            onClick={() => handleSetProcessing(request._id)}
-                            className="flex-1 p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-200 transition-colors duration-200 text-sm font-medium"
-                          >
-                            Process
-                          </button>
-                          <button
-                            onClick={() => handleApprove(request._id)}
-                            className="flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors duration-200 text-sm font-medium"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleReject(request._id)}
-                            className="flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200 transition-colors duration-200 text-sm font-medium"
-                          >
-                            Reject
-                          </button>
-                        </>
+                            <button
+                              onClick={() => handleSetProcessing(request._id)}
+                              disabled={!!processingLoading[request._id]}
+                              className={`flex-1 p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-colors duration-200 text-sm font-medium ${processingLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-amber-200'}`}
+                            >
+                              {processingLoading[request._id] ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
+                                  <span>Processing...</span>
+                                </div>
+                              ) : 'Process'}
+                            </button>
+                            <button
+                              onClick={() => handleApprove(request._id)}
+                              disabled={!!approveLoading[request._id]}
+                              className={`flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
+                            >
+                              {approveLoading[request._id] ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
+                                  <span>Accepting...</span>
+                                </div>
+                              ) : 'Accept'}
+                            </button>
+                            <button
+                              onClick={() => handleReject(request._id)}
+                              disabled={!!rejectLoading[request._id]}
+                              className={`flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                            >
+                              {rejectLoading[request._id] ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
+                                  <span>Rejecting...</span>
+                                </div>
+                              ) : 'Reject'}
+                            </button>
+                          </>
                       )}
                       {request.status === 'processing' && (
                         <>
@@ -546,9 +608,15 @@ export default function ModernLibraryDashboard() {
             <div className="flex gap-4">
               <button
                 onClick={confirmApprove}
-                className="flex-1 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+                disabled={!!approveLoading[selectedRequestId]}
+                className={`flex-1 p-2 bg-green-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${approveLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-700'}`}
               >
-                Confirm Approval
+                {approveLoading[selectedRequestId] ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Confirming...</span>
+                  </div>
+                ) : 'Confirm Approval'}
               </button>
               <button
                 onClick={() => {

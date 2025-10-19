@@ -90,12 +90,18 @@ const fetchRequest = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user.requests);
+    // Sort user's requests by createdAt (newest first)
+    const sortedRequests = [...user.requests].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.json(sortedRequests);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching requests' });
   }
 };
+
 
 const fetchAllRequest = async (req, res) => {
   try {

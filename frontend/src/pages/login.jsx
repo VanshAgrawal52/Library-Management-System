@@ -138,7 +138,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setStatus("OTP resent to your email!");
+        setStatus("OTP resent!");
       } else {
         setStatus(data.message || "Failed to resend OTP");
       }

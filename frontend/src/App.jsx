@@ -10,6 +10,7 @@ import Navbar from "./components/navbar.jsx";
 import HideRoute from './components/hideRoutes.jsx';
 import AdminPanel from './pages/adminPanel.jsx';
 import ForgotPasswordPage from './pages/forgetPasswordPage.jsx';
+import AnalyticsPage from './pages/analyticsPage.jsx';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/adminPanel" element={<AdminPanel />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
       </Routes>
     </Router>
   );

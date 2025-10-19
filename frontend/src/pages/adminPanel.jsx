@@ -9,48 +9,72 @@ const AdminPanel = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [roleLoading, setRoleLoading] = useState({});
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
 
-    // Fetch all users
     useEffect(() => {
         const fetchUsers = async () => {
             try {
+                const token = localStorage.getItem('token');
                 if (!token) {
                     navigate('/login');
                     return;
                 }
-                if (user?.role !== 'admin') {
-                    navigate("/user");
+
+                // Securely check admin role from backend
+                const checkRes = await fetchWithAuth('http://localhost:5000/api/admin/check-admin', {
+                    method: 'GET',
+                });
+
+                if (checkRes.status === 403) {
+                    navigate('/user');
+                    return;
+                } else if (!checkRes.ok) {
+                    throw new Error(`Error verifying admin: ${checkRes.status}`);
+                }
+
+                const checkData = await checkRes.json();
+                if (!checkData.isAdmin) {
+                    navigate('/user');
                     return;
                 }
 
+                // Only if admin verified → fetch users
                 const response = await fetchWithAuth('http://localhost:5000/api/admin/users', {
                     method: 'GET',
                 });
+
                 if (!response.ok) {
                     throw new Error(`Error fetching users: ${response.status}`);
                 }
+
                 const data = await response.json();
                 setUsers(data);
                 setLoading(false);
             } catch (err) {
+                console.error('Error fetching users:', err);
                 setError('Failed to fetch users');
                 setLoading(false);
-                if (err.message === 'No token found') {
+
+                // If token invalid or expired → redirect to login
+                if (err.message === 'No token found' || err.message.includes('401')) {
                     navigate('/login');
                 }
             }
         };
+
         fetchUsers();
     }, [navigate]);
 
+
     // Handle role toggle
     const handleRoleToggle = async (userId, currentRole, userEmail) => {
+        // set loading for this user button
+        setRoleLoading(prev => ({ ...prev, [userId]: true }));
         try {
             const newRole = currentRole === "user" ? "admin" : "user";
-
             const response = await fetchWithAuth(
                 `http://localhost:5000/api/admin/users/${userId}/role`,
                 {
@@ -87,6 +111,9 @@ const AdminPanel = () => {
             if (err.message === "No token found") {
                 navigate("/login");
             }
+        } finally {
+            // clear loading flag for this user
+            setRoleLoading(prev => { const copy = { ...prev }; delete copy[userId]; return copy; });
         }
     };
 
@@ -114,7 +141,7 @@ const AdminPanel = () => {
         }
     };
 
-    const filteredUsers = users.filter(u => 
+    const filteredUsers = users.filter(u =>
         u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -237,11 +264,10 @@ const AdminPanel = () => {
                                                 <div className="font-semibold text-gray-900">{user.email}</div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm ${
-                                                    user.role === 'admin' 
-                                                        ? 'bg-purple-100 text-purple-800' 
+                                                <span className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm ${user.role === 'admin'
+                                                        ? 'bg-purple-100 text-purple-800'
                                                         : 'bg-blue-100 text-blue-800'
-                                                }`}>
+                                                    }`}>
                                                     {user.role === 'admin' ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                                     <span className="capitalize">{user.role}</span>
                                                 </span>
@@ -249,13 +275,20 @@ const AdminPanel = () => {
                                             <td className="px-8 py-6">
                                                 <button
                                                     onClick={() => handleRoleToggle(user._id, user.role, user.email)}
-                                                    className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-md hover:shadow-lg text-white ${
-                                                        user.role === 'user'
-                                                            ? 'bg-purple-600 hover:bg-purple-700'
-                                                            : 'bg-blue-500 hover:bg-blue-600'
-                                                    }`}
+                                                    disabled={!!roleLoading[user._id]}
+                                                    className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-md text-white ${user.role === 'user'
+                                                            ? 'bg-purple-600'
+                                                            : 'bg-blue-500'
+                                                        } ${roleLoading[user._id] ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg'} `}
                                                 >
-                                                    {user.role === 'user' ? 'Make Admin' : 'Make User'}
+                                                    {roleLoading[user._id] ? (
+                                                        <div className="flex items-center justify-center space-x-2">
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                            <span>{user.role === 'user' ? 'Making Admin...' : 'Reverting...'}</span>
+                                                        </div>
+                                                    ) : (
+                                                        user.role === 'user' ? 'Make Admin' : 'Make User'
+                                                    )}
                                                 </button>
                                             </td>
                                         </tr>

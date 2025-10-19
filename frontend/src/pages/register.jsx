@@ -180,6 +180,7 @@ export default function RegisterPage() {
                                         <option value="Physics">Physics</option>
                                         <option value="Chemistry">Chemistry</option>
                                         <option value="Mathematics">Mathematics</option>
+                                        <option value="Staff">Staff</option>
                                     </select>
                                 </div>
                             </div>
