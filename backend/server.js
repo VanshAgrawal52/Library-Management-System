@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const requestRoutes = require('./routes/requestRoutes');
 const analyticsRoutes = require('./routes/analytics');
+const library = require('./routes/libraryRoutes');
 const { verifyAccessToken } = require('./middlewares/auth');
 const bodyParser = require('body-parser');
 
@@ -52,6 +53,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/library', library);
 app.use('/api', analyticsRoutes);
 
 // Example protected route

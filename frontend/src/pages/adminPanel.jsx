@@ -170,7 +170,7 @@ const AdminPanel = () => {
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                             <BookOpen className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LibraryX</span>
+                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LibraryX Admin</span>
                     </div>
 
                     <div className="hidden md:flex items-center space-x-8">

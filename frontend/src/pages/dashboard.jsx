@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Github, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Calendar, TrendingUp, Activity, Hourglass, Users } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom";
+import { Search, User, Github, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Calendar, TrendingUp, Activity, Hourglass, Users, Send, Edit2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 export default function ModernLibraryDashboard() {
@@ -10,13 +10,32 @@ export default function ModernLibraryDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showLibraryModal, setShowLibraryModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [pdfFile, setPdfFile] = useState(null);
-  // per-request loading flags
+  const [libraries, setLibraries] = useState([]);
+  const [selectedLibraries, setSelectedLibraries] = useState([]);
+  const [libraryModalError, setLibraryModalError] = useState('');
+  const [libraryModalSuccess, setLibraryModalSuccess] = useState('');
+  const [libraryModalLoading, setLibraryModalLoading] = useState(false);
   const [processingLoading, setProcessingLoading] = useState({});
   const [approveLoading, setApproveLoading] = useState({});
   const [rejectLoading, setRejectLoading] = useState({});
+  const [editLoading, setEditLoading] = useState({});
+  const [editFormData, setEditFormData] = useState({
+    documentTitle: '',
+    authors: '',
+    publicationName: '',
+    publisher: '',
+    publicationYear: '',
+    volumeNo: '',
+    issueNo: '',
+    pageRange: '',
+    sourceUrl: '',
+  });
+  const [editError, setEditError] = useState('');
 
   const rejectionReasons = [
     'Already Subscribed',
@@ -28,19 +47,19 @@ export default function ModernLibraryDashboard() {
 
   useEffect(() => {
     const verifyAdmin = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (!token) {
-        navigate("/login");
+        navigate('/login');
         return;
       }
 
       try {
-        const response = await fetchWithAuth("http://localhost:5000/api/admin/check-admin", {
-          method: "GET",
+        const response = await fetchWithAuth('http://localhost:5000/api/admin/check-admin', {
+          method: 'GET',
         });
 
         if (response.status === 403) {
-          navigate("/user");
+          navigate('/user');
           return;
         } else if (!response.ok) {
           throw new Error(`Error verifying admin: ${response.status}`);
@@ -48,34 +67,32 @@ export default function ModernLibraryDashboard() {
 
         const data = await response.json();
         if (!data.isAdmin) {
-          navigate("/user");
+          navigate('/user');
           return;
         }
 
-        // Only fetch requests after successful admin verification
         fetchRequests();
       } catch (error) {
-        console.error("Error verifying admin:", error);
-        navigate("/login");
+        console.error('Error verifying admin:', error);
+        navigate('/login');
       }
     };
 
     verifyAdmin();
   }, [navigate]);
 
-
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (!token) {
-        navigate("/login");
+        navigate('/login');
         return;
       }
 
-      const response = await fetchWithAuth("http://localhost:5000/api/requests/all", {
-        method: "GET",
+      const response = await fetchWithAuth('http://localhost:5000/api/requests/all', {
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
@@ -91,13 +108,69 @@ export default function ModernLibraryDashboard() {
       }));
       setRequests(transformedData);
     } catch (error) {
-      console.error("❌ Error fetching requests:", error);
+      console.error('❌ Error fetching requests:', error);
+    }
+  };
+
+  const fetchLibraries = async () => {
+    try {
+      const response = await fetchWithAuth('http://localhost:5000/api/library/fetch', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching libraries: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setLibraries(data.libraries);
+      setLibraryModalError('');
+    } catch (error) {
+      setLibraryModalError('Failed to fetch libraries. Please try again.');
+      console.error(error);
+    }
+  };
+
+  const handleSendEmails = async () => {
+    if (selectedLibraries.length === 0) {
+      setLibraryModalError('Please select at least one library.');
+      return;
+    }
+
+    setLibraryModalLoading(true);
+    try {
+      const response = await fetchWithAuth(`http://localhost:5000/api/library/${selectedRequestId}/send-emails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ libraryIds: selectedLibraries }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error sending emails: ${response.status}`);
+      }
+
+      setLibraryModalSuccess('Emails sent successfully!');
+      setLibraryModalError('');
+      setTimeout(() => {
+        setShowLibraryModal(false);
+        setSelectedLibraries([]);
+        setLibraryModalSuccess('');
+      }, 2000);
+    } catch (error) {
+      setLibraryModalError(error.message || 'Failed to send emails. Please try again.');
+      setLibraryModalSuccess('');
+    } finally {
+      setLibraryModalLoading(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/logout", {
+      const response = await fetch('http://localhost:5000/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -130,7 +203,6 @@ export default function ModernLibraryDashboard() {
       return;
     }
 
-    // set loading for approve button on this request
     setApproveLoading(prev => ({ ...prev, [selectedRequestId]: true }));
 
     try {
@@ -158,7 +230,6 @@ export default function ModernLibraryDashboard() {
       console.error('Error updating status:', error);
       alert('Failed to update status to accepted. Please try again.');
     } finally {
-      // clear loading
       setApproveLoading(prev => { const copy = { ...prev }; delete copy[selectedRequestId]; return copy; });
     }
   };
@@ -174,7 +245,6 @@ export default function ModernLibraryDashboard() {
       return;
     }
 
-    // set loading for reject button on this request
     setRejectLoading(prev => ({ ...prev, [selectedRequestId]: true }));
 
     try {
@@ -199,13 +269,11 @@ export default function ModernLibraryDashboard() {
       console.error('Error updating status:', error);
       alert('Failed to update status to rejected. Please try again.');
     } finally {
-      // clear loading
       setRejectLoading(prev => { const copy = { ...prev }; delete copy[selectedRequestId]; return copy; });
     }
   };
 
   const handleSetProcessing = async (requestId) => {
-    // set loading for processing button on this request
     setProcessingLoading(prev => ({ ...prev, [requestId]: true }));
 
     try {
@@ -227,9 +295,89 @@ export default function ModernLibraryDashboard() {
       console.error('Error updating status:', error);
       alert('Failed to update status to processing. Please try again.');
     } finally {
-      // clear loading
       setProcessingLoading(prev => { const copy = { ...prev }; delete copy[requestId]; return copy; });
     }
+  };
+
+  const handleRequestLibraries = (requestId) => {
+    setSelectedRequestId(requestId);
+    setShowLibraryModal(true);
+    fetchLibraries();
+  };
+
+  const handleEdit = (request) => {
+    setSelectedRequestId(request._id);
+    setEditFormData({
+      documentTitle: request.documentTitle || '',
+      authors: request.authors || '',
+      publicationName: request.publicationName || '',
+      publisher: request.publisher || '',
+      publicationYear: request.publicationYear || '',
+      volumeNo: request.volumeNo || '',
+      issueNo: request.issueNo || '',
+      pageRange: request.pageRange || '',
+      sourceUrl: request.sourceUrl || '',
+    });
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const confirmEdit = async () => {
+    if (!editFormData.documentTitle || !editFormData.authors) {
+      setEditError('Document title and authors are required.');
+      return;
+    }
+
+    setEditLoading(prev => ({ ...prev, [selectedRequestId]: true }));
+
+    try {
+      const response = await fetchWithAuth(`http://localhost:5000/api/requests/edit/${selectedRequestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update request');
+      }
+
+      await fetchRequests();
+      setShowEditModal(false);
+      setEditFormData({
+        documentTitle: '',
+        authors: '',
+        publicationName: '',
+        publisher: '',
+        publicationYear: '',
+        volumeNo: '',
+        issueNo: '',
+        pageRange: '',
+        sourceUrl: '',
+      });
+      setSelectedRequestId(null);
+      setEditError('');
+    } catch (error) {
+      setEditError(error.message || 'Failed to update request. Please try again.');
+    } finally {
+      setEditLoading(prev => { const copy = { ...prev }; delete copy[selectedRequestId]; return copy; });
+    }
+  };
+
+  const handleLibrarySelect = (libraryId) => {
+    setSelectedLibraries(prev =>
+      prev.includes(libraryId)
+        ? prev.filter(id => id !== libraryId)
+        : [...prev, libraryId]
+    );
   };
 
   const getStatusColor = (status) => {
@@ -300,9 +448,8 @@ export default function ModernLibraryDashboard() {
             </div>
             <div className="flex items-center space-x-6 text-gray-600">
               <Link to="/" className="hover:text-blue-600 transition-colors font-medium">New Request</Link>
-              <Link to="/adminPanel" className="hover:text-blue-600 transition-colors font-medium">
-                Admin Panel
-              </Link>
+              <Link to="/library" className="hover:text-blue-600 transition-colors font-medium">Library</Link>
+              <Link to="/adminPanel" className="hover:text-blue-600 transition-colors font-medium">Admin Panel</Link>
               <Link to="/analytics" className="hover:text-blue-600 transition-colors font-medium">Analytics</Link>
               <button onClick={handleLogout} className="hover:text-blue-600 transition-colors font-medium">Logout</button>
             </div>
@@ -430,7 +577,7 @@ export default function ModernLibraryDashboard() {
               </div>
             </div>
           </div>
-          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 overflow-hidden">
+          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 overflow-visible">
             <div className="p-6 border-b border-gray-200/50">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -447,17 +594,18 @@ export default function ModernLibraryDashboard() {
               <div className="col-span-3">Requester Info</div>
               <div className="col-span-2">Publication</div>
               <div className="col-span-1">Status</div>
-              <div className="col-span-2">Actions</div>
+              <div className="col-span-1">Library Request</div>
+              <div className="col-span-1">Actions</div>
             </div>
-            <div>
+            <div className="max-h-[60vh] overflow-y-auto">
               {filteredRequests.map((request, index) => (
                 <div
                   key={request._id}
                   className="border-b border-gray-200/50 last:border-b-0 hover:bg-blue-50/30 transition-all duration-300"
                 >
-                  <div className="hidden lg:grid lg:grid-cols-12 gap-4 p-6 items-center">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 p-4 lg:p-6 items-start">
                     <div className="col-span-4">
-                      <div className="font-semibold text-gray-900 mb-1 line-clamp-2">{request.documentTitle}</div>
+                      <div className="font-semibold text-gray-900 mb-1">{request.documentTitle}</div>
                       <div className="text-sm text-gray-600 mb-1">by {request.authors}</div>
                       <div className="text-xs text-gray-500 flex items-center gap-2">
                         <span>{request.publisher} • {request.publicationYear}</span>
@@ -493,65 +641,82 @@ export default function ModernLibraryDashboard() {
                     </div>
                     <div className="col-span-2 text-xs text-gray-500">{request.publicationName}</div>
                     <div className="col-span-1 text-xs text-gray-500">{formatDate(request.requestedAt)}</div>
-                    <div className="col-span-2 flex gap-2">
-                          {request.status === 'pending' && (
+                    <div className="col-span-1">
+                      <button
+                        onClick={() => handleRequestLibraries(request._id)}
+                        className="p-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors duration-200 text-sm font-medium"
+                      >
+                        <Send className="w-4 h-4 inline mr-1" /> Request
+                      </button>
+                    </div>
+                    <div className="col-span-1 flex flex-wrap gap-2 items-center">
+                      <button
+                        onClick={() => handleEdit(request)}
+                        disabled={!!editLoading[request._id]}
+                        className={`p-2 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${editLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-yellow-200'}`}
+                      >
+                        <Edit2 className="w-4 h-4 inline" />
+                      </button>
+                      {request.status === 'pending' && (
                         <>
-                            <button
-                              onClick={() => handleSetProcessing(request._id)}
-                              disabled={!!processingLoading[request._id]}
-                              className={`flex-1 p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-colors duration-200 text-sm font-medium ${processingLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-amber-200'}`}
-                            >
-                              {processingLoading[request._id] ? (
-                                <div className="flex items-center justify-center space-x-2">
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
-                                  <span>Processing...</span>
-                                </div>
-                              ) : 'Process'}
-                            </button>
-                            <button
-                              onClick={() => handleApprove(request._id)}
-                              disabled={!!approveLoading[request._id]}
-                              className={`flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
-                            >
-                              {approveLoading[request._id] ? (
-                                <div className="flex items-center justify-center space-x-2">
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
-                                  <span>Accepting...</span>
-                                </div>
-                              ) : 'Accept'}
-                            </button>
-                            <button
-                              onClick={() => handleReject(request._id)}
-                              disabled={!!rejectLoading[request._id]}
-                              className={`flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
-                            >
-                              {rejectLoading[request._id] ? (
-                                <div className="flex items-center justify-center space-x-2">
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
-                                  <span>Rejecting...</span>
-                                </div>
-                              ) : 'Reject'}
-                            </button>
-                          </>
+                          <button
+                            onClick={() => handleSetProcessing(request._id)}
+                            disabled={!!processingLoading[request._id]}
+                            className={`p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${processingLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-amber-200'}`}
+                          >
+                            {processingLoading[request._id] ? (
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
+                                <span>Processing...</span>
+                              </div>
+                            ) : 'Process'}
+                          </button>
+                          <button
+                            onClick={() => handleApprove(request._id)}
+                            disabled={!!approveLoading[request._id]}
+                            className={`p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
+                          >
+                            {approveLoading[request._id] ? (
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
+                                <span>Accepting...</span>
+                              </div>
+                            ) : 'Accept'}
+                          </button>
+                          <button
+                            onClick={() => handleReject(request._id)}
+                            disabled={!!rejectLoading[request._id]}
+                            className={`p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                          >
+                            {rejectLoading[request._id] ? (
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
+                                <span>Rejecting...</span>
+                              </div>
+                            ) : 'Reject'}
+                          </button>
+                        </>
                       )}
                       {request.status === 'processing' && (
                         <>
                           <button
                             onClick={() => handleApprove(request._id)}
-                            className="flex-1 p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors duration-200 text-sm font-medium"
+                            disabled={!!approveLoading[request._id]}
+                            className={`p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
                           >
                             Accept
                           </button>
                           <button
                             onClick={() => handleReject(request._id)}
-                            className="flex-1 p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg hover:bg-red-200 transition-colors duration-200 text-sm font-medium"
+                            disabled={!!rejectLoading[request._id]}
+                            className={`p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
                           >
                             Reject
                           </button>
                         </>
                       )}
                       {(request.status === 'accepted' || request.status === 'rejected') && (
-                        <div className="flex-1 text-center text-sm text-gray-500 font-medium py-2">Completed</div>
+                        <div className="text-center text-sm text-gray-500 font-medium py-2">Completed</div>
                       )}
                     </div>
                   </div>
@@ -651,15 +816,227 @@ export default function ModernLibraryDashboard() {
             <div className="flex gap-4">
               <button
                 onClick={confirmReject}
-                className="flex-1 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium"
+                disabled={!!rejectLoading[selectedRequestId]}
+                className={`flex-1 p-2 bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${rejectLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'}`}
               >
-                Confirm Rejection
+                {rejectLoading[selectedRequestId] ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Confirming...</span>
+                  </div>
+                ) : 'Confirm Rejection'}
               </button>
               <button
                 onClick={() => {
                   setShowRejectModal(false);
                   setRejectReason('');
                   setSelectedRequestId(null);
+                }}
+                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Request Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Request</h3>
+            {editError && <p className="text-red-500 mb-4">{editError}</p>}
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Document Title *</label>
+                <input
+                  type="text"
+                  name="documentTitle"
+                  value={editFormData.documentTitle}
+                  onChange={handleEditChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter document title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Authors *</label>
+                <input
+                  type="text"
+                  name="authors"
+                  value={editFormData.authors}
+                  onChange={handleEditChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter authors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Publication Name</label>
+                <input
+                  type="text"
+                  name="publicationName"
+                  value={editFormData.publicationName}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter publication name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Publisher</label>
+                <input
+                  type="text"
+                  name="publisher"
+                  value={editFormData.publisher}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter publisher"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Publication Year</label>
+                <input
+                  type="number"
+                  name="publicationYear"
+                  value={editFormData.publicationYear}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter publication year"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Volume Number</label>
+                <input
+                  type="text"
+                  name="volumeNo"
+                  value={editFormData.volumeNo}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter volume number"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Number</label>
+                <input
+                  type="text"
+                  name="issueNo"
+                  value={editFormData.issueNo}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter issue number"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Page Range</label>
+                <input
+                  type="text"
+                  name="pageRange"
+                  value={editFormData.pageRange}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter page range (e.g., 1-10)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Source URL</label>
+                <input
+                  type="url"
+                  name="sourceUrl"
+                  value={editFormData.sourceUrl}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter source URL"
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={confirmEdit}
+                  disabled={!!editLoading[selectedRequestId]}
+                  className={`flex-1 p-2 bg-yellow-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${editLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-yellow-700'}`}
+                >
+                  {editLoading[selectedRequestId] ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Saving...</span>
+                    </div>
+                  ) : 'Save Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditFormData({
+                      documentTitle: '',
+                      authors: '',
+                      publicationName: '',
+                      publisher: '',
+                      publicationYear: '',
+                      volumeNo: '',
+                      issueNo: '',
+                      pageRange: '',
+                      sourceUrl: '',
+                    });
+                    setSelectedRequestId(null);
+                    setEditError('');
+                  }}
+                  className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Library Selection Modal */}
+      {showLibraryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Select Libraries to Request Document</h3>
+            {libraryModalError && <p className="text-red-500 mb-4">{libraryModalError}</p>}
+            {libraryModalSuccess && <p className="text-green-500 mb-4">{libraryModalSuccess}</p>}
+            {libraries.length === 0 ? (
+              <p className="text-gray-500">No libraries available.</p>
+            ) : (
+              <div className="space-y-2">
+                {libraries.map((library) => (
+                  <div key={library._id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={library._id}
+                      checked={selectedLibraries.includes(library._id)}
+                      onChange={() => handleLibrarySelect(library._id)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={library._id} className="ml-2 text-sm text-gray-900">
+                      {library.name} ({library.email})
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleSendEmails}
+                disabled={libraryModalLoading}
+                className={`flex-1 p-2 bg-blue-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${libraryModalLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+              >
+                {libraryModalLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Sending...</span>
+                  </div>
+                ) : 'Send Requests'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowLibraryModal(false);
+                  setSelectedLibraries([]);
+                  setLibraryModalError('');
+                  setLibraryModalSuccess('');
                 }}
                 className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
               >

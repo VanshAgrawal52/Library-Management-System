@@ -283,9 +283,113 @@ const getFile = async (req, res) => {
   }
 };
 
+const updateInfo = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const {
+      documentTitle,
+      authors,
+      publicationName,
+      publisher,
+      publicationYear,
+      volumeNo,
+      issueNo,
+      pageRange,
+      sourceUrl,
+    } = req.body;
+
+    // Validate requestId
+    if (!mongoose.Types.ObjectId.isValid(requestId)) {
+      return res.status(400).json({ message: 'Invalid request ID' });
+    }
+
+    // Validate required fields
+    if (
+      !documentTitle ||
+      !authors ||
+      !publicationName ||
+      !publisher ||
+      !publicationYear ||
+      !volumeNo ||
+      !sourceUrl
+    ) {
+      return res.status(400).json({ message: 'All required fields must be provided' });
+    }
+
+    // Validate publicationYear
+    const year = parseInt(publicationYear, 10);
+    if (isNaN(year) || year < 1800 || year > new Date().getFullYear() + 1) {
+      return res.status(400).json({ message: 'Invalid publication year' });
+    }
+
+    // Validate sourceUrl
+    try {
+      new URL(sourceUrl);
+    } catch {
+      return res.status(400).json({ message: 'Invalid source URL' });
+    }
+
+    // Find the request in the Request collection
+    const request = await Request.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // Prepare update data
+    const updateData = {
+      documentTitle,
+      authors,
+      publicationName,
+      publisher,
+      publicationYear: year,
+      volumeNo,
+      issueNo: issueNo || null,
+      pageRange: pageRange || null,
+      sourceUrl,
+    };
+
+    // Update the Request collection
+    const updatedRequest = await Request.findByIdAndUpdate(
+      requestId,
+      updateData,
+      { new: true }
+    );
+
+    // Find the user with matching email
+    const user = await User.findOne({ email: request.email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find and update the request in the user's requests array using metaId
+    const requestIndex = user.requests.findIndex(
+      (req) => req._id.toString() === request.metaId.toString()
+    );
+    if (requestIndex === -1) {
+      return res.status(404).json({ message: 'Request not found in user\'s requests array' });
+    }
+
+    user.requests[requestIndex] = {
+      ...user.requests[requestIndex].toObject(),
+      ...updateData,
+    };
+
+    await user.save();
+
+    res.status(200).json({
+      message: 'Request updated successfully',
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error('Error updating request:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   submitRequest,
   fetchRequest,
+  updateInfo,
   fetchAllRequest,
   updateRequestStatus,
   getFile,

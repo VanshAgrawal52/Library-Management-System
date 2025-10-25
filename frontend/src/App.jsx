@@ -11,6 +11,7 @@ import HideRoute from './components/hideRoutes.jsx';
 import AdminPanel from './pages/adminPanel.jsx';
 import ForgotPasswordPage from './pages/forgetPasswordPage.jsx';
 import AnalyticsPage from './pages/analyticsPage.jsx';
+import Library from './pages/library.jsx';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/adminPanel" element={<AdminPanel />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/library" element={<Library />} />
       </Routes>
     </Router>
   );
