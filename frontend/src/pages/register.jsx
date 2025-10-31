@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Lock, CreditCard, Eye, EyeOff, UserPlus, BookOpen, Github, Shield, Users, Zap, GraduationCap } from 'lucide-react';
+import { User, Mail, Lock, CreditCard, Eye, EyeOff, UserPlus, BookOpen, Shield, Users, Zap, GraduationCap, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -70,18 +70,18 @@ export default function RegisterPage() {
             const response = await fetch("http://localhost:5000/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password, name, rollNo, department}),
+                body: JSON.stringify({ email, password, name, rollNo, department }),
                 credentials: 'include',
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setStatus('Account created successfully! Welcome to LibraryX!');
-                setFormData({ email: '', password: '', confirmPassword: '' , name: '', rollNo: '', department: ''});
+                setStatus('Account created successfully! Redirecting to login...');
+                setFormData({ email: '', password: '', confirmPassword: '', name: '', rollNo: '', department: '' });
                 setTimeout(() => {
                     setStatus('');
-                    navigate("/login"); // redirect to login page
+                    navigate("/login");
                 }, 2000);
             } else {
                 setStatus(data.message || "Registration failed");
@@ -95,45 +95,69 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            {/* Animated Background Elements */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute top-40 left-40 w-60 h-60 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+            {/* Header with IIT Jodhpur Branding */}
+            <nav className="bg-white border-b border-slate-200 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-20">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                                <GraduationCap className="w-8 h-8 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
+                                <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
+                            </div>
+                        </div>
+                        <div className="hidden md:flex items-center space-x-2">
+                            <BookOpen className="w-5 h-5 text-blue-700" />
+                            <span className="text-lg font-semibold text-slate-800">Central Library Portal</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
 
             {/* Main Content */}
-            <main className="relative z-10 py-12 px-6">
+            <main className="py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-2xl mx-auto">
                     {/* Header Section */}
-                    <div className="text-center mb-12">
-                        <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center space-x-2 bg-blue-100 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg text-sm font-medium mb-4">
                             <UserPlus className="w-4 h-4" />
                             <span>Account Registration</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                            Join <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LibraryX</span>
-                        </h1>
-                        <p className="text-lg text-gray-600 max-w-xl mx-auto">
-                            Create your account to access thousands of academic resources and start your research journey.
+                        <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                            Create Your Account
+                        </h2>
+                        <p className="text-slate-600">
+                            Register to access the IIT Jodhpur Central Library system
                         </p>
                     </div>
 
                     {/* Registration Form */}
-                    <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <UserPlus className="w-6 h-6 text-blue-700" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900">Sign Up</h3>
+                                <p className="text-sm text-slate-600">Create your library account</p>
+                            </div>
+                        </div>
+
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Name */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name *</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                                     <input
                                         type="text"
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="Enter your full name"
                                         required
                                     />
@@ -141,16 +165,16 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Roll Number */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Roll Number *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Roll Number *</label>
                                 <div className="relative">
-                                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                                     <input
                                         type="text"
                                         name="rollNo"
                                         value={formData.rollNo}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="Enter your roll number"
                                         required
                                     />
@@ -158,15 +182,15 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Department */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Department *</label>
                                 <div className="relative">
-                                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                                     <select
                                         name="department"
                                         value={formData.department}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none"
                                         required
                                     >
                                         <option value="" disabled>Select your department</option>
@@ -182,20 +206,25 @@ export default function RegisterPage() {
                                         <option value="Mathematics">Mathematics</option>
                                         <option value="Staff">Staff</option>
                                     </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Email */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address *</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="your.email@iitj.ac.in"
                                         required
                                     />
@@ -203,23 +232,23 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Password */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Password *</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         name="password"
                                         value={formData.password}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-12 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="Create a strong password"
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -227,32 +256,32 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Confirm Password */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password *</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Confirm Password *</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
                                         value={formData.confirmPassword}
                                         onChange={handleInputChange}
-                                        className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                                        className="w-full pl-11 pr-12 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="Confirm your password"
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                     >
                                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Terms and Conditions */}
-                            <div className="flex items-start space-x-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            {/* Terms Notice */}
+                            <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                <Shield className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
                                 <div className="text-sm text-blue-800">
                                     <p className="font-medium mb-1">Account Security & Terms</p>
                                     <p>By creating an account, you agree to our terms of service and privacy policy. Your data is secure and encrypted.</p>
@@ -263,10 +292,11 @@ export default function RegisterPage() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${isSubmitting
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg'
-                                    }`}
+                                className={`w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-medium text-white transition-all ${
+                                    isSubmitting
+                                        ? 'bg-slate-400 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
                             >
                                 {isSubmitting ? (
                                     <>
@@ -282,9 +312,10 @@ export default function RegisterPage() {
                             </button>
 
                             {/* Login Link */}
-                            <div className="text-center text-gray-600">
+                            <div className="text-center text-slate-600 pt-4 border-t border-slate-200">
                                 Already have an account?{' '}
                                 <button
+                                    type="button"
                                     onClick={() => navigate("/login")}
                                     className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                                 >
@@ -294,61 +325,76 @@ export default function RegisterPage() {
 
                             {/* Status Message */}
                             {status && (
-                                <div className={`flex items-center space-x-3 p-4 rounded-xl border transition-all duration-300 ${status.includes('successfully')
-                                    ? 'bg-green-50 border-green-200 text-green-800'
-                                    : 'bg-red-50 border-red-200 text-red-800'
-                                    }`}>
+                                <div className={`flex items-center space-x-3 p-4 rounded-lg border transition-all ${
+                                    status.includes('successfully')
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                                        : 'bg-red-50 border-red-200 text-red-800'
+                                }`}>
                                     {status.includes('successfully') ? (
-                                        <UserPlus className="w-5 h-5 flex-shrink-0" />
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0" />
                                     ) : (
-                                        <Shield className="w-5 h-5 flex-shrink-0" />
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
                                     )}
-                                    <span className="font-medium">{status}</span>
+                                    <span className="font-medium text-sm">{status}</span>
                                 </div>
                             )}
                         </form>
                     </div>
 
                     {/* Features Section */}
-                    <div className="mt-12 grid md:grid-cols-3 gap-6">
-                        <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <BookOpen className="w-6 h-6 text-blue-600" />
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <BookOpen className="w-6 h-6 text-blue-700" />
                             </div>
-                            <h3 className="font-semibold text-gray-900 mb-2">Vast Library</h3>
-                            <p className="text-sm text-gray-600">Access thousands of academic papers, journals, and research materials.</p>
+                            <h3 className="font-semibold text-slate-900 mb-2 text-sm">Vast Library</h3>
+                            <p className="text-xs text-slate-600">Access thousands of academic resources and research materials</p>
                         </div>
-                        <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Zap className="w-6 h-6 text-green-600" />
+                        <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <Zap className="w-6 h-6 text-emerald-700" />
                             </div>
-                            <h3 className="font-semibold text-gray-900 mb-2">Fast Access</h3>
-                            <p className="text-sm text-gray-600">Quick document retrieval and instant access to available resources.</p>
+                            <h3 className="font-semibold text-slate-900 mb-2 text-sm">Quick Access</h3>
+                            <p className="text-xs text-slate-600">Instant access to available resources and materials</p>
                         </div>
-                        <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-6 h-6 text-purple-600" />
+                        <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <Users className="w-6 h-6 text-purple-700" />
                             </div>
-                            <h3 className="font-semibold text-gray-900 mb-2">Community</h3>
-                            <p className="text-sm text-gray-600">Join a community of researchers, students, and academic professionals.</p>
+                            <h3 className="font-semibold text-slate-900 mb-2 text-sm">Community</h3>
+                            <p className="text-xs text-slate-600">Join researchers, students, and academic professionals</p>
                         </div>
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="mt-8 text-center">
+                        <p className="text-sm text-slate-600">
+                            For support, contact{' '}
+                            <a href="mailto:library@iitj.ac.in" className="text-blue-600 hover:text-blue-700 font-medium">
+                                library@iitj.ac.in
+                            </a>
+                        </p>
                     </div>
                 </div>
             </main>
 
             {/* Footer */}
-            <footer className="relative z-10 bg-white/80 backdrop-blur-sm border-t border-white/20 py-8 mt-16">
-                <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-                    <div className="text-gray-600">© 2025 LibraryX. All rights reserved.</div>
-                    <div className="flex items-center space-x-3 text-gray-600">
-                        <span>Built with ❤️ by</span>
-                        <a
-                            href="#"
-                            className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                        >
-                            Kavya
-                        </a>
-                        <Github className="w-4 h-4 text-gray-400" />
+            <footer className="bg-white border-t border-slate-200 mt-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
+                                <GraduationCap className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
+                                <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>
+                            </div>
+                        </div>
+                        <div className="text-center md:text-right">
+                            <p className="text-sm text-slate-600">© 2025 IIT Jodhpur Central Library. All rights reserved.</p>
+                            <p className="text-xs text-slate-500 mt-1">Library Management System v2.0</p>
+                        </div>
                     </div>
                 </div>
             </footer>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn, BookOpen, Github, Shield, Users, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn, BookOpen, Shield, Users, Zap, GraduationCap, Building2, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -150,94 +150,104 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-40 left-40 w-60 h-60 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      {/* Header with IIT Jodhpur Branding */}
+      <nav className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                <GraduationCap className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
+                <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center space-x-2">
+              <BookOpen className="w-5 h-5 text-blue-700" />
+              <span className="text-lg font-semibold text-slate-800">Central Library Portal</span>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 py-12 px-6">
+      <main className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-lg mx-auto">
           {/* Header Section */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-2 bg-blue-100 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg text-sm font-medium mb-4">
               <LogIn className="w-4 h-4" />
               <span>{step === 'login' ? 'Account Login' : 'Email Verification'}</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              {step === 'login' ? (
-                <>Welcome <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Back</span></>
-              ) : (
-                <>Verify Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Email</span></>
-              )}
-            </h1>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+              {step === 'login' ? 'Welcome Back' : 'Verify Your Email'}
+            </h2>
+            <p className="text-slate-600">
               {step === 'login'
-                ? 'Sign in to your LibraryX account and continue your research journey.'
+                ? 'Sign in to access the IIT Jodhpur Central Library system'
                 : `We've sent a 6-digit verification code to ${formData.email}`
               }
             </p>
           </div>
 
           {/* Login/OTP Form Container */}
-          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
             {step === 'login' ? (
               // Login Form
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <LogIn className="w-6 h-6 text-white" />
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <LogIn className="w-6 h-6 text-blue-700" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
-                    <p className="text-gray-600">Access your account</p>
+                    <h3 className="text-xl font-bold text-slate-900">Sign In</h3>
+                    <p className="text-sm text-slate-600">Access your library account</p>
                   </div>
                 </div>
 
                 {/* Email Field */}
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address *</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
-                      placeholder="your.email@university.edu"
+                      className="w-full pl-11 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="your.email@iitj.ac.in"
                     />
                   </div>
                 </div>
 
                 {/* Password Field */}
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Password *</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 w-5 h-5" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300"
+                      className="w-full pl-11 pr-12 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
+                {/* Forgot Password */}
+                <div className="flex items-center justify-end">
                   <button
                     onClick={() => navigate("/forgot-password")}
                     className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
@@ -250,10 +260,11 @@ export default function LoginPage() {
                 <button
                   onClick={handleLogin}
                   disabled={loading || !formData.email || !formData.password}
-                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || !formData.email || !formData.password
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg'
-                    }`}
+                  className={`w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-medium text-white transition-all ${
+                    loading || !formData.email || !formData.password
+                      ? 'bg-slate-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
                   {loading ? (
                     <>
@@ -269,7 +280,7 @@ export default function LoginPage() {
                 </button>
 
                 {/* Register Link */}
-                <div className="text-center text-gray-600">
+                <div className="text-center text-slate-600 pt-4 border-t border-slate-200">
                   Don't have an account?{' '}
                   <button
                     onClick={() => navigate("/register")}
@@ -282,28 +293,28 @@ export default function LoginPage() {
             ) : (
               // OTP Verification Form
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-8">
+                <div className="flex items-center space-x-3 mb-6">
                   <button
                     onClick={() => setStep('login')}
-                    className="w-10 h-10 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm flex items-center justify-center hover:border-blue-300 transition-all duration-300 mr-2"
+                    className="w-10 h-10 rounded-lg border border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"
                   >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    <ArrowLeft className="w-5 h-5 text-slate-600" />
                   </button>
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Shield className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-emerald-700" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Verify Email</h2>
-                    <p className="text-gray-600">Enter the verification code</p>
+                    <h3 className="text-xl font-bold text-slate-900">Verify Email</h3>
+                    <p className="text-sm text-slate-600">Enter verification code</p>
                   </div>
                 </div>
 
                 {/* OTP Input */}
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3 text-center">
                     Enter 6-digit verification code
                   </label>
-                  <div className="flex space-x-3 justify-center">
+                  <div className="flex space-x-2 justify-center">
                     {otp.map((digit, index) => (
                       <input
                         key={index}
@@ -312,7 +323,7 @@ export default function LoginPage() {
                         value={digit}
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="w-12 h-12 text-center text-lg font-bold border border-gray-200 bg-white/70 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        className="w-12 h-12 text-center text-lg font-bold border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                         maxLength={1}
                       />
                     ))}
@@ -323,10 +334,11 @@ export default function LoginPage() {
                 <button
                   onClick={handleVerifyOtp}
                   disabled={loading || otp.join('').length !== 6}
-                  className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 ${loading || otp.join('').length !== 6
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg'
-                    }`}
+                  className={`w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-medium text-white transition-all ${
+                    loading || otp.join('').length !== 6
+                      ? 'bg-slate-400 cursor-not-allowed'
+                      : 'bg-emerald-600 hover:bg-emerald-700'
+                  }`}
                 >
                   {loading ? (
                     <>
@@ -342,7 +354,7 @@ export default function LoginPage() {
                 </button>
 
                 {/* Resend Link */}
-                <div className="text-center text-gray-600">
+                <div className="text-center text-slate-600 pt-4 border-t border-slate-200">
                   Didn't receive the code?{' '}
                   <button
                     onClick={resendOtp}
@@ -356,64 +368,79 @@ export default function LoginPage() {
 
             {/* Status Message */}
             {status && (
-              <div className={`flex items-center space-x-3 p-4 rounded-xl border transition-all duration-300 mt-6 ${status.includes('successful')
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : status.includes('sent')
-                  ? 'bg-blue-50 border-blue-200 text-blue-800'
-                  : 'bg-red-50 border-red-200 text-red-800'
-                }`}>
+              <div className={`flex items-center space-x-3 p-4 rounded-lg border transition-all mt-6 ${
+                status.includes('successful')
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : status.includes('sent') || status.includes('resent')
+                    ? 'bg-blue-50 border-blue-200 text-blue-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+              }`}>
                 {status.includes('successful') ? (
-                  <LogIn className="w-5 h-5 flex-shrink-0" />
-                ) : status.includes('sent') ? (
-                  <Shield className="w-5 h-5 flex-shrink-0" />
-                ) : (
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                ) : status.includes('sent') || status.includes('resent') ? (
                   <Mail className="w-5 h-5 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 )}
-                <span className="font-medium">{status}</span>
+                <span className="font-medium text-sm">{status}</span>
               </div>
             )}
           </div>
 
           {/* Features Section */}
-          <div className="mt-12 grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-blue-600" />
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Shield className="w-6 h-6 text-blue-700" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Secure Login</h3>
-              <p className="text-sm text-gray-600">Two-factor authentication keeps your account safe and secure.</p>
+              <h3 className="font-semibold text-slate-900 mb-2 text-sm">Secure Access</h3>
+              <p className="text-xs text-slate-600">Two-factor authentication protects your account</p>
             </div>
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-green-600" />
+            <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Zap className="w-6 h-6 text-emerald-700" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Quick Access</h3>
-              <p className="text-sm text-gray-600">Instant access to your bookmarks, requests, and research materials.</p>
+              <h3 className="font-semibold text-slate-900 mb-2 text-sm">Quick Access</h3>
+              <p className="text-xs text-slate-600">Instant access to library resources</p>
             </div>
-            <div className="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
+            <div className="text-center p-6 rounded-xl bg-white border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Users className="w-6 h-6 text-purple-700" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Personalized</h3>
-              <p className="text-sm text-gray-600">Customized experience based on your research interests and history.</p>
+              <h3 className="font-semibold text-slate-900 mb-2 text-sm">Personalized</h3>
+              <p className="text-xs text-slate-600">Customized experience for researchers</p>
             </div>
+          </div>
+
+          {/* Additional Info */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-slate-600">
+              For support, contact{' '}
+              <a href="mailto:library@iitj.ac.in" className="text-blue-600 hover:text-blue-700 font-medium">
+                library@iitj.ac.in
+              </a>
+            </p>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-white/80 backdrop-blur-sm border-t border-white/20 py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="text-gray-600">© 2025 LibraryX. All rights reserved.</div>
-          <div className="flex items-center space-x-3 text-gray-600">
-            <span>Built with ❤️ by</span>
-            <a
-              href="#"
-              className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              Kavya
-            </a>
-            <Github className="w-4 h-4 text-gray-400" />
+      <footer className="bg-white border-t border-slate-200 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
+                <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>
+              </div>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-slate-600">© 2025 IIT Jodhpur Central Library. All rights reserved.</p>
+              <p className="text-xs text-slate-500 mt-1">Library Management System v2.0</p>
+            </div>
           </div>
         </div>
       </footer>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Github, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Calendar, TrendingUp, Activity, Hourglass, Users, Send, Edit2 } from 'lucide-react';
+import { Search, User, Filter, Eye, Check, X, Clock, AlertCircle, FileText, ExternalLink, BookOpen, Calendar, TrendingUp, Activity, Hourglass, Users, Send, Edit2, GraduationCap, Building2, Mail, Package, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 
@@ -36,6 +36,7 @@ export default function ModernLibraryDashboard() {
     sourceUrl: '',
   });
   const [editError, setEditError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
 
   const rejectionReasons = [
     'Already Subscribed',
@@ -226,6 +227,8 @@ export default function ModernLibraryDashboard() {
       setShowApproveModal(false);
       setPdfFile(null);
       setSelectedRequestId(null);
+      setStatusMessage('Request accepted successfully');
+      setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to accepted. Please try again.');
@@ -265,6 +268,8 @@ export default function ModernLibraryDashboard() {
       setShowRejectModal(false);
       setRejectReason('');
       setSelectedRequestId(null);
+      setStatusMessage('Request rejected');
+      setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to rejected. Please try again.');
@@ -291,6 +296,8 @@ export default function ModernLibraryDashboard() {
       }
 
       await fetchRequests();
+      setStatusMessage('Status updated to processing');
+      setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status to processing. Please try again.');
@@ -365,6 +372,8 @@ export default function ModernLibraryDashboard() {
       });
       setSelectedRequestId(null);
       setEditError('');
+      setStatusMessage('Request updated successfully');
+      setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
       setEditError(error.message || 'Failed to update request. Please try again.');
     } finally {
@@ -382,12 +391,22 @@ export default function ModernLibraryDashboard() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'accepted': return 'text-green-700 bg-green-100 border-green-200';
-      case 'rejected': return 'text-red-700 bg-red-100 border-red-200';
-      case 'processing': return 'text-amber-700 bg-amber-100 border-amber-200';
-      case 'pending': return 'text-gray-700 bg-gray-100 border-gray-200';
-      default: return 'text-gray-700 bg-gray-100 border-gray-200';
+      case 'accepted': return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'rejected': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'processing': return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'pending': return 'bg-slate-50 text-slate-700 border border-slate-200';
+      default: return 'bg-slate-50 text-slate-700 border border-slate-200';
     }
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      pending: <Hourglass className="w-4 h-4" />,
+      processing: <Clock className="w-4 h-4" />,
+      accepted: <CheckCircle className="w-4 h-4" />,
+      rejected: <X className="w-4 h-4" />,
+    };
+    return icons[status] || <Clock className="w-4 h-4" />;
   };
 
   const filteredRequests = requests.filter(request => {
@@ -418,150 +437,152 @@ export default function ModernLibraryDashboard() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-40 left-40 w-60 h-60 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
-      </div>
-
-      {/* Header */}
-      <nav className="relative z-10 backdrop-blur-sm bg-white/80 border-b border-white/20 px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      {/* Status Toast */}
+      {statusMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-white border-l-4 border-blue-600 shadow-xl rounded-lg p-4 max-w-md animate-slide-in">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LibraryX Admin</span>
+            <CheckCircle className="w-5 h-5 text-blue-600" />
+            <p className="text-slate-800 font-medium">{statusMessage}</p>
           </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search requests..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64 rounded-full border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-              />
+        </div>
+      )}
+
+      {/* Header with IIT Jodhpur Branding */}
+      <nav className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Left: Logo and Institute Name */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                  <GraduationCap className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
+                  <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
+                </div>
+              </div>
+              <div className="hidden lg:block w-px h-12 bg-slate-300 ml-4"></div>
+              <div className="hidden lg:flex items-center space-x-2">
+                <BookOpen className="w-5 h-5 text-blue-700" />
+                <span className="text-lg font-semibold text-slate-800">Central Library - Admin Portal</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-6 text-gray-600">
-              <Link to="/" className="hover:text-blue-600 transition-colors font-medium">New Request</Link>
-              <Link to="/library" className="hover:text-blue-600 transition-colors font-medium">Library</Link>
-              <Link to="/adminPanel" className="hover:text-blue-600 transition-colors font-medium">Admin Panel</Link>
-              <Link to="/analytics" className="hover:text-blue-600 transition-colors font-medium">Analytics</Link>
-              <button onClick={handleLogout} className="hover:text-blue-600 transition-colors font-medium">Logout</button>
-            </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-              <User className="w-5 h-5 text-white" />
+
+            {/* Right: Navigation */}
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-6">
+                <Link to="/" className="text-slate-700 hover:text-blue-700 font-medium transition-colors">New Request</Link>
+                <Link to="/library" className="text-slate-700 hover:text-blue-700 font-medium transition-colors">Library</Link>
+                <Link to="/adminPanel" className="text-slate-700 hover:text-blue-700 font-medium transition-colors">Admin Panel</Link>
+                <Link to="/analytics" className="text-slate-700 hover:text-blue-700 font-medium transition-colors">Analytics</Link>
+                <button onClick={handleLogout} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-all">Logout</button>
+              </div>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
+                <User className="w-5 h-5 text-white" />
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 py-12 px-6">
+      <main className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <Activity className="w-4 h-4" />
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center space-x-2 text-sm text-slate-600 mb-3">
+              <Building2 className="w-4 h-4" />
               <span>Admin Dashboard</span>
+              <span>/</span>
+              <span className="text-blue-700 font-medium">Request Management</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Document Request <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Management</span>
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Review and manage document requests from users across the institution
-            </p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Document Request Management</h2>
+            <p className="text-slate-600">Review, process, and manage all document requests from the IIT Jodhpur community</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-400/10 to-gray-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-600 to-amber-700 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.processing || 0}</div>
-                    <div className="text-sm text-amber-700">Processing</div>
-                  </div>
+
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-amber-700" />
                 </div>
-                <div className="w-full bg-amber-100 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-amber-300 to-amber-400 h-2 rounded-full" style={{ width: `${((statusCounts.processing || 0) / requests.length) * 100}%` }}></div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900">{statusCounts.processing || 0}</div>
+                  <div className="text-sm text-slate-600">Processing</div>
                 </div>
               </div>
-            </div>
-            <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Hourglass className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.pending || 0}</div>
-                    <div className="text-sm text-gray-600">Pending</div>
-                  </div>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-gray-400 to-gray-500 h-2 rounded-full" style={{ width: `${((statusCounts.pending || 0) / requests.length) * 100}%` }}></div>
-                </div>
+              <div className="w-full bg-amber-100 rounded-full h-2">
+                <div className="bg-amber-600 h-2 rounded-full" style={{ width: `${((statusCounts.processing || 0) / requests.length) * 100}%` }}></div>
               </div>
             </div>
-            <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Check className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.accepted || 0}</div>
-                    <div className="text-sm text-gray-600">Accepted</div>
-                  </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                  <Hourglass className="w-6 h-6 text-slate-700" />
                 </div>
-                <div className="w-full bg-green-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style={{ width: `${((statusCounts.accepted || 0) / requests.length) * 100}%` }}></div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900">{statusCounts.pending || 0}</div>
+                  <div className="text-sm text-slate-600">Pending</div>
                 </div>
               </div>
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div className="bg-slate-600 h-2 rounded-full" style={{ width: `${((statusCounts.pending || 0) / requests.length) * 100}%` }}></div>
+              </div>
             </div>
-            <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-400/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <X className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{statusCounts.rejected || 0}</div>
-                    <div className="text-sm text-gray-600">Rejected</div>
-                  </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <Check className="w-6 h-6 text-emerald-700" />
                 </div>
-                <div className="w-full bg-red-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-red-500 to-rose-600 h-2 rounded-full" style={{ width: `${((statusCounts.rejected || 0) / requests.length) * 100}%` }}></div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900">{statusCounts.accepted || 0}</div>
+                  <div className="text-sm text-slate-600">Accepted</div>
                 </div>
+              </div>
+              <div className="w-full bg-emerald-100 rounded-full h-2">
+                <div className="bg-emerald-600 h-2 rounded-full" style={{ width: `${((statusCounts.accepted || 0) / requests.length) * 100}%` }}></div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                  <X className="w-6 h-6 text-red-700" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900">{statusCounts.rejected || 0}</div>
+                  <div className="text-sm text-slate-600">Rejected</div>
+                </div>
+              </div>
+              <div className="w-full bg-red-100 rounded-full h-2">
+                <div className="bg-red-600 h-2 rounded-full" style={{ width: `${((statusCounts.rejected || 0) / requests.length) * 100}%` }}></div>
               </div>
             </div>
           </div>
-          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 p-6 mb-8">
+
+          {/* Filter Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <Filter className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Filter className="w-5 h-5 text-blue-700" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Filter Requests</h2>
-                <p className="text-gray-600">Refine your view</p>
+                <h3 className="text-lg font-bold text-slate-900">Filter & Search</h3>
+                <p className="text-sm text-slate-600">Refine your view to find specific requests</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="group">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Status Filter</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 group-hover:border-blue-300 appearance-none"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="all">All Status</option>
                   <option value="processing">Processing</option>
@@ -570,190 +591,238 @@ export default function ModernLibraryDashboard() {
                   <option value="rejected">Rejected</option>
                 </select>
               </div>
-              <div className="flex items-end">
-                <div className="text-lg font-semibold text-gray-900">
-                  {filteredRequests.length} of {requests.length} requests
+              <div className="md:col-span-2 flex items-end">
+                <div className="w-full">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Search</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder="Search by title, author, email, publication..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-slate-600">
+                Showing <span className="font-semibold text-slate-900">{filteredRequests.length}</span> of <span className="font-semibold text-slate-900">{requests.length}</span> requests
+              </p>
+            </div>
           </div>
-          <div className="backdrop-blur-sm bg-white/80 rounded-3xl shadow-lg border border-white/20 overflow-visible">
-            <div className="p-6 border-b border-gray-200/50">
+
+          {/* Requests Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Document Requests</h2>
-                  <p className="text-gray-600">Manage all incoming requests</p>
+                  <h3 className="text-lg font-bold text-slate-900">Document Requests</h3>
+                  <p className="text-sm text-slate-600">Review and process incoming document requests</p>
                 </div>
               </div>
             </div>
-            <div className="hidden lg:grid lg:grid-cols-12 gap-4 p-6 bg-gray-50/50 border-b border-gray-200/50 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-              <div className="col-span-4">Document Details</div>
-              <div className="col-span-3">Requester Info</div>
-              <div className="col-span-2">Publication</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-1">Library Request</div>
-              <div className="col-span-1">Actions</div>
-            </div>
-            <div className="max-h-[60vh] overflow-y-auto">
-              {filteredRequests.map((request, index) => (
-                <div
-                  key={request._id}
-                  className="border-b border-gray-200/50 last:border-b-0 hover:bg-blue-50/30 transition-all duration-300"
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 p-4 lg:p-6 items-start">
-                    <div className="col-span-4">
-                      <div className="font-semibold text-gray-900 mb-1">{request.documentTitle}</div>
-                      <div className="text-sm text-gray-600 mb-1">by {request.authors}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-2">
-                        <span>{request.publisher} • {request.publicationYear}</span>
-                        {request.sourceUrl && (
-                          <a href={request.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 transition-colors">
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                        {request.pdfFileId && request.status === 'accepted' && (
-                          <a
-                            href={`http://localhost:5000/api/requests/file/${request.pdfFileId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 transition-colors"
-                          >
-                            <FileText className="w-3 h-3" /> View PDF
-                          </a>
-                        )}
-                      </div>
-                      {(request.volumeNo || request.issueNo || request.pageRange) && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {request.volumeNo && `Vol. ${request.volumeNo}`}
-                          {request.issueNo && ` Issue ${request.issueNo}`}
-                          {request.pageRange && ` pp. ${request.pageRange}`}
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Document Details
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Requester
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Publication
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Requested
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {filteredRequests.length > 0 ? (
+                    filteredRequests.map((request) => (
+                      <tr key={request._id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-5">
+                          <div className="max-w-md">
+                            <div className="font-bold text-slate-900 mb-1">{request.documentTitle}</div>
+                            <div className="text-sm text-slate-600 mb-1">
+                              <span className="font-medium">Authors:</span> {request.authors}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <span>{request.publisher} • {request.publicationYear}</span>
+                              {request.sourceUrl && (
+                                <a href={request.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+                              {request.pdfFileId && request.status === 'accepted' && (
+                                <a
+                                  href={`http://localhost:5000/api/requests/file/${request.pdfFileId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                >
+                                  <FileText className="w-3 h-3" /> PDF
+                                </a>
+                              )}
+                            </div>
+                            {(request.volumeNo || request.issueNo || request.pageRange) && (
+                              <div className="text-xs text-slate-500 mt-1">
+                                {request.volumeNo && `Vol. ${request.volumeNo}`}
+                                {request.issueNo && ` Issue ${request.issueNo}`}
+                                {request.pageRange && ` pp. ${request.pageRange}`}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm text-slate-900 font-medium">{request.email}</div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm text-slate-900">{request.publicationName}</div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${getStatusColor(request.status)}`}>
+                            {getStatusIcon(request.status)}
+                            <span className="capitalize">{request.status}</span>
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm text-slate-900">{formatDate(request.requestedAt)}</div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(request)}
+                                disabled={!!editLoading[request._id]}
+                                className={`p-2 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-lg transition-colors text-xs font-medium ${editLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-yellow-200'}`}
+                                title="Edit Request"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleRequestLibraries(request._id)}
+                                className="p-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium"
+                                title="Request from Libraries"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                            </div>
+                            {request.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleSetProcessing(request._id)}
+                                  disabled={!!processingLoading[request._id]}
+                                  className={`px-3 py-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-colors text-xs font-medium ${processingLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-amber-200'}`}
+                                >
+                                  {processingLoading[request._id] ? 'Processing...' : 'Process'}
+                                </button>
+                                <button
+                                  onClick={() => handleApprove(request._id)}
+                                  disabled={!!approveLoading[request._id]}
+                                  className={`px-3 py-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg transition-colors text-xs font-medium ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-emerald-200'}`}
+                                >
+                                  {approveLoading[request._id] ? 'Accepting...' : 'Accept'}
+                                </button>
+                                <button
+                                  onClick={() => handleReject(request._id)}
+                                  disabled={!!rejectLoading[request._id]}
+                                  className={`px-3 py-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors text-xs font-medium ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                                >
+                                  {rejectLoading[request._id] ? 'Rejecting...' : 'Reject'}
+                                </button>
+                              </div>
+                            )}
+                            {request.status === 'processing' && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleApprove(request._id)}
+                                  disabled={!!approveLoading[request._id]}
+                                  className={`px-3 py-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg transition-colors text-xs font-medium ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-emerald-200'}`}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleReject(request._id)}
+                                  disabled={!!rejectLoading[request._id]}
+                                  className={`px-3 py-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors text-xs font-medium ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            )}
+                            {(request.status === 'accepted' || request.status === 'rejected') && (
+                              <div className="text-center text-xs text-slate-500 font-medium py-2">Completed</div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <AlertCircle className="w-12 h-12 text-slate-300" />
+                          <p className="text-slate-600 font-medium">No requests found</p>
+                          <p className="text-sm text-slate-500">Try adjusting your filters or search terms</p>
                         </div>
-                      )}
-                    </div>
-                    <div className="col-span-3">
-                      <div className="text-sm text-gray-600">{request.email}</div>
-                      <div className="mt-2">
-                        <span className={`text-xs font-medium px-3 py-2 rounded-full border ${getStatusColor(request.status)}`}>{request.status}</span>
-                      </div>
-                    </div>
-                    <div className="col-span-2 text-xs text-gray-500">{request.publicationName}</div>
-                    <div className="col-span-1 text-xs text-gray-500">{formatDate(request.requestedAt)}</div>
-                    <div className="col-span-1">
-                      <button
-                        onClick={() => handleRequestLibraries(request._id)}
-                        className="p-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors duration-200 text-sm font-medium"
-                      >
-                        <Send className="w-4 h-4 inline mr-1" /> Request
-                      </button>
-                    </div>
-                    <div className="col-span-1 flex flex-wrap gap-2 items-center">
-                      <button
-                        onClick={() => handleEdit(request)}
-                        disabled={!!editLoading[request._id]}
-                        className={`p-2 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${editLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-yellow-200'}`}
-                      >
-                        <Edit2 className="w-4 h-4 inline" />
-                      </button>
-                      {request.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleSetProcessing(request._id)}
-                            disabled={!!processingLoading[request._id]}
-                            className={`p-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${processingLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-amber-200'}`}
-                          >
-                            {processingLoading[request._id] ? (
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
-                                <span>Processing...</span>
-                              </div>
-                            ) : 'Process'}
-                          </button>
-                          <button
-                            onClick={() => handleApprove(request._id)}
-                            disabled={!!approveLoading[request._id]}
-                            className={`p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
-                          >
-                            {approveLoading[request._id] ? (
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
-                                <span>Accepting...</span>
-                              </div>
-                            ) : 'Accept'}
-                          </button>
-                          <button
-                            onClick={() => handleReject(request._id)}
-                            disabled={!!rejectLoading[request._id]}
-                            className={`p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
-                          >
-                            {rejectLoading[request._id] ? (
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
-                                <span>Rejecting...</span>
-                              </div>
-                            ) : 'Reject'}
-                          </button>
-                        </>
-                      )}
-                      {request.status === 'processing' && (
-                        <>
-                          <button
-                            onClick={() => handleApprove(request._id)}
-                            disabled={!!approveLoading[request._id]}
-                            className={`p-2 bg-green-100 text-green-700 border border-green-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${approveLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-200'}`}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleReject(request._id)}
-                            disabled={!!rejectLoading[request._id]}
-                            className={`p-2 bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors duration-200 text-sm font-medium whitespace-nowrap ${rejectLoading[request._id] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-200'}`}
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {(request.status === 'accepted' || request.status === 'rejected') && (
-                        <div className="text-center text-sm text-gray-500 font-medium py-2">Completed</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-            {filteredRequests.length === 0 && (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-8 h-8 text-gray-400" />
+
+            {/* Table Footer */}
+            {filteredRequests.length > 0 && (
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-200">
+                <div className="flex items-center justify-between text-sm">
+                  <p className="text-slate-600">
+                    Showing <span className="font-semibold text-slate-900">{filteredRequests.length}</span> of <span className="font-semibold text-slate-900">{requests.length}</span> requests
+                  </p>
+                  <p className="text-slate-500">IIT Jodhpur Central Library</p>
                 </div>
-                <div className="text-xl font-semibold text-gray-900 mb-2">No requests found</div>
-                <div className="text-gray-600">Try adjusting your filters or search terms</div>
               </div>
             )}
           </div>
+
+          {/* Info Cards */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <FileText className="w-8 h-8 text-white" />
+            <div className="bg-white rounded-xl border border-slate-200 p-8 hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-8 h-8 text-blue-700" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Document Types</h3>
-              <p className="text-gray-600">Managing journal articles, books, conference papers, and research documents from various academic sources.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Document Types</h3>
+              <p className="text-slate-600 text-center">Managing journal articles, books, conference papers, and research documents from various academic sources.</p>
             </div>
-            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <TrendingUp className="w-8 h-8 text-white" />
+            <div className="bg-white rounded-xl border border-slate-200 p-8 hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="w-8 h-8 text-emerald-700" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Processing</h3>
-              <p className="text-gray-600">Streamlined workflow ensures most document requests are processed and delivered within 2-3 business days.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Quick Processing</h3>
+              <p className="text-slate-600 text-center">Streamlined workflow ensures most document requests are processed and delivered within 2-3 business days.</p>
             </div>
-            <div className="text-center p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-white/20 hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Users className="w-8 h-8 text-white" />
+            <div className="bg-white rounded-xl border border-slate-200 p-8 hover:shadow-md transition-shadow">
+              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+                <Users className="w-8 h-8 text-amber-700" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Multi-User Support</h3>
-              <p className="text-gray-600">Supporting users with comprehensive document access services.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Community Support</h3>
+              <p className="text-slate-600 text-center">Serving the entire IIT Jodhpur academic community with comprehensive document access services.</p>
             </div>
           </div>
         </div>
@@ -761,27 +830,38 @@ export default function ModernLibraryDashboard() {
 
       {/* Approval Modal */}
       {showApproveModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Upload PDF for Approval</h3>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setPdfFile(e.target.files[0])}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 mb-4"
-            />
-            <div className="flex gap-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Check className="w-6 h-6 text-emerald-700" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Approve Request</h3>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">Upload the document PDF to approve this request</p>
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Select PDF File</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setPdfFile(e.target.files[0])}
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+              {pdfFile && (
+                <p className="mt-2 text-sm text-slate-600">Selected: {pdfFile.name}</p>
+              )}
+            </div>
+            <div className="flex gap-3">
               <button
                 onClick={confirmApprove}
-                disabled={!!approveLoading[selectedRequestId]}
-                className={`flex-1 p-2 bg-green-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${approveLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-700'}`}
+                disabled={!!approveLoading[selectedRequestId] || !pdfFile}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  approveLoading[selectedRequestId] || !pdfFile
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
               >
-                {approveLoading[selectedRequestId] ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Confirming...</span>
-                  </div>
-                ) : 'Confirm Approval'}
+                {approveLoading[selectedRequestId] ? 'Approving...' : 'Confirm Approval'}
               </button>
               <button
                 onClick={() => {
@@ -789,7 +869,7 @@ export default function ModernLibraryDashboard() {
                   setPdfFile(null);
                   setSelectedRequestId(null);
                 }}
-                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -798,33 +878,41 @@ export default function ModernLibraryDashboard() {
         </div>
       )}
 
-      {/* Rejection Reason Modal */}
+      {/* Rejection Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Select Rejection Reason</h3>
-            <select
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 mb-4"
-            >
-              <option value="">Select a reason</option>
-              {rejectionReasons.map((reason) => (
-                <option key={reason} value={reason}>{reason}</option>
-              ))}
-            </select>
-            <div className="flex gap-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <X className="w-6 h-6 text-red-700" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Reject Request</h3>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">Please select a reason for rejecting this request</p>
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Rejection Reason</label>
+              <select
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="">Select a reason</option>
+                {rejectionReasons.map((reason) => (
+                  <option key={reason} value={reason}>{reason}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-3">
               <button
                 onClick={confirmReject}
-                disabled={!!rejectLoading[selectedRequestId]}
-                className={`flex-1 p-2 bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${rejectLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'}`}
+                disabled={!!rejectLoading[selectedRequestId] || !rejectReason}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  rejectLoading[selectedRequestId] || !rejectReason
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
               >
-                {rejectLoading[selectedRequestId] ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Confirming...</span>
-                  </div>
-                ) : 'Confirm Rejection'}
+                {rejectLoading[selectedRequestId] ? 'Rejecting...' : 'Confirm Rejection'}
               </button>
               <button
                 onClick={() => {
@@ -832,7 +920,7 @@ export default function ModernLibraryDashboard() {
                   setRejectReason('');
                   setSelectedRequestId(null);
                 }}
-                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -843,125 +931,135 @@ export default function ModernLibraryDashboard() {
 
       {/* Edit Request Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Request</h3>
-            {editError && <p className="text-red-500 mb-4">{editError}</p>}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <Edit2 className="w-6 h-6 text-yellow-700" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Edit Request Details</h3>
+            </div>
+            {editError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{editError}</p>
+              </div>
+            )}
             <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Document Title *</label>
-                <input
-                  type="text"
-                  name="documentTitle"
-                  value={editFormData.documentTitle}
-                  onChange={handleEditChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter document title"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Document Title *</label>
+                  <input
+                    type="text"
+                    name="documentTitle"
+                    value={editFormData.documentTitle}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter document title"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Authors *</label>
+                  <input
+                    type="text"
+                    name="authors"
+                    value={editFormData.authors}
+                    onChange={handleEditChange}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter authors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Publication Name</label>
+                  <input
+                    type="text"
+                    name="publicationName"
+                    value={editFormData.publicationName}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter publication name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Publisher</label>
+                  <input
+                    type="text"
+                    name="publisher"
+                    value={editFormData.publisher}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter publisher"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Publication Year</label>
+                  <input
+                    type="number"
+                    name="publicationYear"
+                    value={editFormData.publicationYear}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="YYYY"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Volume Number</label>
+                  <input
+                    type="text"
+                    name="volumeNo"
+                    value={editFormData.volumeNo}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Vol. number"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Issue Number</label>
+                  <input
+                    type="text"
+                    name="issueNo"
+                    value={editFormData.issueNo}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Issue number"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Page Range</label>
+                  <input
+                    type="text"
+                    name="pageRange"
+                    value={editFormData.pageRange}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="e.g., 1-10"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Source URL</label>
+                  <input
+                    type="url"
+                    name="sourceUrl"
+                    value={editFormData.sourceUrl}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Authors *</label>
-                <input
-                  type="text"
-                  name="authors"
-                  value={editFormData.authors}
-                  onChange={handleEditChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter authors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Publication Name</label>
-                <input
-                  type="text"
-                  name="publicationName"
-                  value={editFormData.publicationName}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter publication name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Publisher</label>
-                <input
-                  type="text"
-                  name="publisher"
-                  value={editFormData.publisher}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter publisher"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Publication Year</label>
-                <input
-                  type="number"
-                  name="publicationYear"
-                  value={editFormData.publicationYear}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter publication year"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Volume Number</label>
-                <input
-                  type="text"
-                  name="volumeNo"
-                  value={editFormData.volumeNo}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter volume number"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Number</label>
-                <input
-                  type="text"
-                  name="issueNo"
-                  value={editFormData.issueNo}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter issue number"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Page Range</label>
-                <input
-                  type="text"
-                  name="pageRange"
-                  value={editFormData.pageRange}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter page range (e.g., 1-10)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Source URL</label>
-                <input
-                  type="url"
-                  name="sourceUrl"
-                  value={editFormData.sourceUrl}
-                  onChange={handleEditChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Enter source URL"
-                />
-              </div>
-              <div className="flex gap-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={confirmEdit}
                   disabled={!!editLoading[selectedRequestId]}
-                  className={`flex-1 p-2 bg-yellow-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${editLoading[selectedRequestId] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-yellow-700'}`}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                    editLoading[selectedRequestId]
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  }`}
                 >
-                  {editLoading[selectedRequestId] ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Saving...</span>
-                    </div>
-                  ) : 'Save Changes'}
+                  {editLoading[selectedRequestId] ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button
                   type="button"
@@ -981,7 +1079,7 @@ export default function ModernLibraryDashboard() {
                     setSelectedRequestId(null);
                     setEditError('');
                   }}
-                  className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+                  className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -993,43 +1091,63 @@ export default function ModernLibraryDashboard() {
 
       {/* Library Selection Modal */}
       {showLibraryModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Select Libraries to Request Document</h3>
-            {libraryModalError && <p className="text-red-500 mb-4">{libraryModalError}</p>}
-            {libraryModalSuccess && <p className="text-green-500 mb-4">{libraryModalSuccess}</p>}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Send className="w-6 h-6 text-blue-700" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Request from Libraries</h3>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">Select one or more libraries to send document request emails</p>
+            
+            {libraryModalError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{libraryModalError}</p>
+              </div>
+            )}
+            {libraryModalSuccess && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm text-emerald-700">{libraryModalSuccess}</p>
+              </div>
+            )}
+
             {libraries.length === 0 ? (
-              <p className="text-gray-500">No libraries available.</p>
+              <div className="text-center py-8">
+                <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500">No libraries available</p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
                 {libraries.map((library) => (
-                  <div key={library._id} className="flex items-center">
+                  <div key={library._id} className="flex items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
                     <input
                       type="checkbox"
                       id={library._id}
                       checked={selectedLibraries.includes(library._id)}
                       onChange={() => handleLibrarySelect(library._id)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="h-5 w-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor={library._id} className="ml-2 text-sm text-gray-900">
-                      {library.name} ({library.email})
+                    <label htmlFor={library._id} className="ml-3 flex-1 cursor-pointer">
+                      <div className="font-medium text-slate-900">{library.name}</div>
+                      <div className="text-sm text-slate-600">{library.email}</div>
                     </label>
                   </div>
                 ))}
               </div>
             )}
-            <div className="flex gap-4 mt-6">
+
+            <div className="flex gap-3">
               <button
                 onClick={handleSendEmails}
-                disabled={libraryModalLoading}
-                className={`flex-1 p-2 bg-blue-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${libraryModalLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+                disabled={libraryModalLoading || selectedLibraries.length === 0}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  libraryModalLoading || selectedLibraries.length === 0
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
-                {libraryModalLoading ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Sending...</span>
-                  </div>
-                ) : 'Send Requests'}
+                {libraryModalLoading ? 'Sending...' : `Send to ${selectedLibraries.length} ${selectedLibraries.length === 1 ? 'Library' : 'Libraries'}`}
               </button>
               <button
                 onClick={() => {
@@ -1038,7 +1156,7 @@ export default function ModernLibraryDashboard() {
                   setLibraryModalError('');
                   setLibraryModalSuccess('');
                 }}
-                className="flex-1 p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -1047,13 +1165,23 @@ export default function ModernLibraryDashboard() {
         </div>
       )}
 
-      <footer className="relative z-10 bg-white/80 backdrop-blur-sm border-t border-white/20 py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="text-gray-600">© 2025 LibraryX. All rights reserved.</div>
-          <div className="flex items-center space-x-3 text-gray-600">
-            <span>Built with ❤️ by</span>
-            <a href="#" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">Kavya</a>
-            <Github className="w-4 h-4 text-gray-400" />
+      {/* Footer */}
+      <footer className="bg-white border-t border-slate-200 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
+                <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>
+              </div>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-slate-600">© 2025 IIT Jodhpur Central Library. All rights reserved.</p>
+              <p className="text-xs text-slate-500 mt-1">Library Management System v2.0</p>
+            </div>
           </div>
         </div>
       </footer>
