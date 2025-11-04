@@ -784,21 +784,6 @@ This project provides comprehensive learning in:
 ---
 
 
-## 📈 Project Statistics
-
-<div align="center">
-
-![GitHub stars](https://img.shields.io/github/stars/your-username/document-request-system?style=social)
-![GitHub forks](https://img.shields.io/github/forks/your-username/document-request-system?style=social)
-![GitHub issues](https://img.shields.io/github/issues/your-username/document-request-system)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/document-request-system)
-
-</div>
-
----
-
-<div align="center">
-
 ### ⭐ Star this repository if you find it helpful!
 
 [⬆ Back to Top](#-document-request-management-system)
