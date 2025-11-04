@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 import { Search, User, BookOpen, Users, Shield, Settings, GraduationCap, Building2, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
@@ -197,9 +198,11 @@ const AdminPanel = () => {
                         {/* Left: Logo and Institute Name */}
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-3">
-                                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                                    <GraduationCap className="w-8 h-8 text-white" />
-                                </div>
+                                <img
+                                    src="/src/assets/logo.png"
+                                    alt="IIT Jodhpur Logo"
+                                    className="w-14 h-14 object-contain rounded-lg shadow-md"
+                                />
                                 <div>
                                     <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
                                     <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
@@ -346,9 +349,9 @@ const AdminPanel = () => {
                                         <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                                             Contact
                                         </th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                        {/* <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                                             Department
-                                        </th>
+                                        </th> */}
                                         <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                                             Current Role
                                         </th>
@@ -377,17 +380,16 @@ const AdminPanel = () => {
                                                         <span className="text-sm text-slate-900">{user.email}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-5">
+                                                {/* <td className="px-6 py-5">
                                                     <div className="text-sm text-slate-900">
                                                         {user.department || 'N/A'}
                                                     </div>
-                                                </td>
+                                                </td> */}
                                                 <td className="px-6 py-5">
-                                                    <span className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                                        user.role === 'admin'
+                                                    <span className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${user.role === 'admin'
                                                             ? 'bg-purple-50 text-purple-700 border border-purple-200'
                                                             : 'bg-blue-50 text-blue-700 border border-blue-200'
-                                                    }`}>
+                                                        }`}>
                                                         {user.role === 'admin' ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                                         <span className="capitalize">{user.role}</span>
                                                     </span>
@@ -396,11 +398,10 @@ const AdminPanel = () => {
                                                     <button
                                                         onClick={() => handleRoleToggle(user._id, user.role, user.email)}
                                                         disabled={!!roleLoading[user._id]}
-                                                        className={`px-4 py-2 rounded-lg font-medium transition-all text-white text-sm ${
-                                                            user.role === 'user'
+                                                        className={`px-4 py-2 rounded-lg font-medium transition-all text-white text-sm ${user.role === 'user'
                                                                 ? 'bg-purple-600 hover:bg-purple-700'
                                                                 : 'bg-blue-600 hover:bg-blue-700'
-                                                        } ${roleLoading[user._id] ? 'opacity-70 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}`}
+                                                            } ${roleLoading[user._id] ? 'opacity-70 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}`}
                                                     >
                                                         {roleLoading[user._id] ? (
                                                             <div className="flex items-center justify-center space-x-2">
@@ -474,9 +475,11 @@ const AdminPanel = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
-                                <GraduationCap className="w-6 h-6 text-white" />
-                            </div>
+                            <img
+                                src="/src/assets/logo.png"
+                                alt="IIT Jodhpur Logo"
+                                className="w-14 h-14 object-contain rounded-lg shadow-md"
+                            />
                             <div>
                                 <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
                                 <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>

@@ -767,7 +767,9 @@ export default function ModernLibraryDashboard() {
                               </div>
                             )}
                             {(request.status === 'accepted' || request.status === 'rejected') && (
-                              <div className="text-center text-xs text-slate-500 font-medium py-2">Completed</div>
+                              <div className="text-center text-xs text-slate-500 font-medium py-2 -mt-10">
+                                Completed
+                              </div>
                             )}
                           </div>
                         </td>
@@ -855,11 +857,10 @@ export default function ModernLibraryDashboard() {
               <button
                 onClick={confirmApprove}
                 disabled={!!approveLoading[selectedRequestId] || !pdfFile}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  approveLoading[selectedRequestId] || !pdfFile
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${approveLoading[selectedRequestId] || !pdfFile
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                }`}
+                  }`}
               >
                 {approveLoading[selectedRequestId] ? 'Approving...' : 'Confirm Approval'}
               </button>
@@ -906,11 +907,10 @@ export default function ModernLibraryDashboard() {
               <button
                 onClick={confirmReject}
                 disabled={!!rejectLoading[selectedRequestId] || !rejectReason}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  rejectLoading[selectedRequestId] || !rejectReason
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${rejectLoading[selectedRequestId] || !rejectReason
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-red-600 hover:bg-red-700 text-white'
-                }`}
+                  }`}
               >
                 {rejectLoading[selectedRequestId] ? 'Rejecting...' : 'Confirm Rejection'}
               </button>
@@ -1053,11 +1053,10 @@ export default function ModernLibraryDashboard() {
                   type="button"
                   onClick={confirmEdit}
                   disabled={!!editLoading[selectedRequestId]}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                    editLoading[selectedRequestId]
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${editLoading[selectedRequestId]
                       ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       : 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                  }`}
+                    }`}
                 >
                   {editLoading[selectedRequestId] ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -1100,7 +1099,7 @@ export default function ModernLibraryDashboard() {
               <h3 className="text-xl font-bold text-slate-900">Request from Libraries</h3>
             </div>
             <p className="text-sm text-slate-600 mb-4">Select one or more libraries to send document request emails</p>
-            
+
             {libraryModalError && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-700">{libraryModalError}</p>
@@ -1141,11 +1140,10 @@ export default function ModernLibraryDashboard() {
               <button
                 onClick={handleSendEmails}
                 disabled={libraryModalLoading || selectedLibraries.length === 0}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  libraryModalLoading || selectedLibraries.length === 0
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${libraryModalLoading || selectedLibraries.length === 0
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                  }`}
               >
                 {libraryModalLoading ? 'Sending...' : `Send to ${selectedLibraries.length} ${selectedLibraries.length === 1 ? 'Library' : 'Libraries'}`}
               </button>

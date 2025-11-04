@@ -206,10 +206,10 @@ const ModernLibraryPage = () => {
   const filteredLibraries = libraries.filter(library => {
     const librarySearchLower = searchTerm.toLowerCase().trim();
     const documentSearchLower = documentSearchTerm.toLowerCase().trim();
-    
+
     // If no search terms, show all libraries
     if (!librarySearchLower && !documentSearchLower) return true;
-    
+
     // Check library-level search
     const libraryMatch = !librarySearchLower || (
       library.name.toLowerCase().includes(librarySearchLower) ||
@@ -218,10 +218,10 @@ const ModernLibraryPage = () => {
       (library.contactPhoneNo && library.contactPhoneNo.toLowerCase().includes(librarySearchLower)) ||
       (library.remarks && library.remarks.toLowerCase().includes(librarySearchLower))
     );
-    
+
     // If no document search, return library match result
     if (!documentSearchLower) return libraryMatch;
-    
+
     // Check if library has any requests matching the document search
     const requests = libraryRequests[library._id] || [];
     const hasMatchingRequest = requests.some(request =>
@@ -230,7 +230,7 @@ const ModernLibraryPage = () => {
       request.authors.toLowerCase().includes(documentSearchLower) ||
       request.publicationName.toLowerCase().includes(documentSearchLower)
     );
-    
+
     // Return true if library matches AND has matching requests (or if only document search is active)
     return libraryMatch && hasMatchingRequest;
   });
@@ -309,9 +309,11 @@ const ModernLibraryPage = () => {
             {/* Left: Logo and Institute Name */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                  <GraduationCap className="w-8 h-8 text-white" />
-                </div>
+                <img
+                  src="/src/assets/logo.png"
+                  alt="IIT Jodhpur Logo"
+                  className="w-14 h-14 object-contain rounded-lg shadow-md"
+                />
                 <div>
                   <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
                   <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
@@ -418,11 +420,10 @@ const ModernLibraryPage = () => {
               </div>
               <button
                 onClick={() => setIsFormVisible(!isFormVisible)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  isFormVisible 
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' 
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${isFormVisible
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                  }`}
               >
                 {isFormVisible ? 'Cancel' : 'Add Library'}
               </button>
@@ -503,11 +504,10 @@ const ModernLibraryPage = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                      isLoading 
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                    className={`px-6 py-3 rounded-lg font-medium transition-all ${isLoading
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
                         : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    }`}
+                      }`}
                   >
                     {isLoading ? 'Adding Library...' : 'Add Library'}
                   </button>
@@ -694,10 +694,10 @@ const ModernLibraryPage = () => {
                                                   {request.documentTitle}
                                                 </div>
                                                 {request.sourceUrl && (
-                                                  <a 
-                                                    href={request.sourceUrl} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
+                                                  <a
+                                                    href={request.sourceUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-1"
                                                   >
                                                     <ExternalLink className="w-3 h-3" /> View Source
@@ -776,9 +776,11 @@ const ModernLibraryPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src="/src/assets/logo.png"
+                alt="IIT Jodhpur Logo"
+                className="w-14 h-14 object-contain rounded-lg shadow-md"
+              />
               <div>
                 <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
                 <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>

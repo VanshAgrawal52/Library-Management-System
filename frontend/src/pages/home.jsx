@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, User, Github, BookOpen, FileText, Users, Calendar, Link, Building, Send, Check, GraduationCap, Building2, Mail, AlertCircle } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from '../utils/fetchWithAuth';
+import logo from '../assets/logo.png';
 
 export default function LibraryRequestPage() {
   const navigate = useNavigate();
@@ -145,11 +146,10 @@ export default function LibraryRequestPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
       {/* Status Toast */}
       {status && (
-        <div className={`fixed top-4 right-4 z-50 border-l-4 shadow-xl rounded-lg p-4 max-w-md animate-slide-in ${
-          status.includes('successfully') 
-            ? 'bg-white border-green-600' 
-            : 'bg-white border-red-600'
-        }`}>
+        <div className={`fixed top-4 right-4 z-50 border-l-4 shadow-xl rounded-lg p-4 max-w-md animate-slide-in ${status.includes('successfully')
+          ? 'bg-white border-green-600'
+          : 'bg-white border-red-600'
+          }`}>
           <div className="flex items-center space-x-3">
             {status.includes('successfully') ? (
               <Check className="w-5 h-5 text-green-600" />
@@ -170,9 +170,14 @@ export default function LibraryRequestPage() {
             {/* Left: Logo and Institute Name */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                {/* <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
                   <GraduationCap className="w-8 h-8 text-white" />
-                </div>
+                </div> */}
+                <img
+                  src="/src/assets/logo.png"
+                  alt="IIT Jodhpur Logo"
+                  className="w-14 h-14 object-contain rounded-lg shadow-md"
+                />
                 <div>
                   <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
                   <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
@@ -194,7 +199,7 @@ export default function LibraryRequestPage() {
                 >
                   <span>My Requests</span>
                 </button>
-                
+
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-all duration-200"
@@ -422,11 +427,10 @@ export default function LibraryRequestPage() {
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`w-full md:w-auto flex items-center justify-center space-x-2 px-8 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-                      isSubmitting
-                        ? 'bg-slate-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md'
-                    }`}
+                    className={`w-full md:w-auto flex items-center justify-center space-x-2 px-8 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${isSubmitting
+                      ? 'bg-slate-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md'
+                      }`}
                   >
                     {isSubmitting ? (
                       <>
@@ -466,9 +470,11 @@ export default function LibraryRequestPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src="/src/assets/logo.png"
+                alt="IIT Jodhpur Logo"
+                className="w-14 h-14 object-contain rounded-lg shadow-md"
+              />
               <div>
                 <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
                 <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>

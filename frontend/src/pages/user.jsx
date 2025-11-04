@@ -190,9 +190,11 @@ const UserDashboard = () => {
                         {/* Left: Logo and Institute Name */}
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-3">
-                                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                                    <GraduationCap className="w-8 h-8 text-white" />
-                                </div>
+                                <img
+                                    src="/src/assets/logo.png"
+                                    alt="IIT Jodhpur Logo"
+                                    className="w-14 h-14 object-contain rounded-lg shadow-md"
+                                />
                                 <div>
                                     <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
                                     <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
@@ -208,22 +210,22 @@ const UserDashboard = () => {
                         {/* Right: Navigation */}
                         <div className="flex items-center space-x-6">
                             <div className="hidden md:flex items-center space-x-6">
-                                <Link 
-                                    to="/" 
+                                <Link
+                                    to="/"
                                     className="text-slate-700 hover:text-blue-700 font-medium transition-colors duration-200 flex items-center space-x-1"
                                 >
                                     <span>New Request</span>
                                 </Link>
 
                                 {user?.role === 'admin' && (
-                                    <Link 
-                                        to="/dashboard" 
+                                    <Link
+                                        to="/dashboard"
                                         className="text-slate-700 hover:text-blue-700 font-medium transition-colors duration-200"
                                     >
                                         Admin Dashboard
                                     </Link>
                                 )}
-                                
+
                                 <button
                                     onClick={handleLogout}
                                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-all duration-200"
@@ -363,8 +365,8 @@ const UserDashboard = () => {
                                 <tbody className="divide-y divide-slate-200">
                                     {requests.length > 0 ? (
                                         requests
-                                            .filter(request => 
-                                                searchTerm === '' || 
+                                            .filter(request =>
+                                                searchTerm === '' ||
                                                 request.documentTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                                 request.authors?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                                 request.publicationName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -405,11 +407,10 @@ const UserDashboard = () => {
                                                         <button
                                                             onClick={request.status === 'accepted' && request.pdfFileId ? () => handleDownload(request.pdfFileId, request.documentTitle) : undefined}
                                                             disabled={request.status !== 'accepted' || !request.pdfFileId}
-                                                            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                                                request.status === 'accepted' && request.pdfFileId
+                                                            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${request.status === 'accepted' && request.pdfFileId
                                                                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md cursor-pointer'
                                                                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                            }`}
+                                                                }`}
                                                             title={request.status !== 'accepted' ? 'Available after acceptance' : !request.pdfFileId ? 'No file available' : 'Download PDF'}
                                                         >
                                                             <Download className="w-4 h-4" />
@@ -424,8 +425,8 @@ const UserDashboard = () => {
                                                 <div className="flex flex-col items-center justify-center space-y-3">
                                                     <BookOpen className="w-12 h-12 text-slate-300" />
                                                     <p className="text-slate-600 font-medium">No document requests found</p>
-                                                    <Link 
-                                                        to="/" 
+                                                    <Link
+                                                        to="/"
                                                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
                                                     >
                                                         Submit New Request
@@ -443,8 +444,8 @@ const UserDashboard = () => {
                             <div className="bg-slate-50 px-6 py-4 border-t border-slate-200">
                                 <div className="flex items-center justify-between text-sm">
                                     <p className="text-slate-600">
-                                        Showing <span className="font-semibold text-slate-900">{requests.filter(r => 
-                                            searchTerm === '' || 
+                                        Showing <span className="font-semibold text-slate-900">{requests.filter(r =>
+                                            searchTerm === '' ||
                                             r.documentTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             r.authors?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             r.publicationName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -463,9 +464,11 @@ const UserDashboard = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
-                                <GraduationCap className="w-6 h-6 text-white" />
-                            </div>
+                            <img
+                                src="/src/assets/logo.png"
+                                alt="IIT Jodhpur Logo"
+                                className="w-14 h-14 object-contain rounded-lg shadow-md"
+                            />
                             <div>
                                 <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
                                 <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>
