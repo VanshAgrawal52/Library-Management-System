@@ -154,7 +154,7 @@ const AdminPanel = () => {
         u.department?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const adminCount = users.filter(u => u.role === 'admin').length;
+    const adminCount = users.filter(u => u.role === 'admin').length+1;
     const userCount = users.filter(u => u.role === 'user').length;
 
     if (loading) {
@@ -257,7 +257,7 @@ const AdminPanel = () => {
                                     <Users className="w-6 h-6 text-blue-700" />
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-3xl font-bold text-slate-900">{users.length}</div>
+                                    <div className="text-3xl font-bold text-slate-900">{users.length+1}</div>
                                     <div className="text-sm text-slate-600">Total Users</div>
                                 </div>
                             </div>

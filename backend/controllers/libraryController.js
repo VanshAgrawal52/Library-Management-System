@@ -87,7 +87,7 @@ const sendMail = async (req, res) => {
             ${request.sourceUrl ? `<li><strong>Source URL:</strong> <a href="${request.sourceUrl}">${request.sourceUrl}</a></li>` : ''}
           </ul>
           <p>Please let us know the availability of this document or any further steps required to fulfill this request.</p>
-          <p>Best regards,<br>LibraryX Admin Team</p>
+          <p>Best regards,<br>IIT Jodhpur Central Library Admin Team</p>
         `,
       };
 

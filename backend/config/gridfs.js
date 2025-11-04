@@ -49,7 +49,7 @@ const upload = multer({
       cb(new Error('Only PDF files are allowed'));
     }
   },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
 // Provide a memory storage multer instance for routes that want to handle
@@ -64,14 +64,14 @@ const memoryUpload = multer({
       cb(new Error('Only PDF files are allowed'));
     }
   },
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 100 * 1024 * 1024 },
 });
 
 const multerErrorHandler = (err, req, res, next) => {
   console.log('Multer error:', err); // Debug
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'File too large. Maximum size is 10MB.' });
+      return res.status(400).json({ message: 'File too large. Maximum size is 100MB.' });
     }
     return res.status(400).json({ message: err.message });
   } else if (err.message === 'Only PDF files are allowed') {

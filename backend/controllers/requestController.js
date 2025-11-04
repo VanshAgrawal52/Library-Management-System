@@ -76,6 +76,64 @@ const submitRequest = async (req, res) => {
     });
     await request.save();
 
+    // Fetch all admin users to send notification emails
+    const admins = await User.find({ role: 'admin' });
+
+    // Send email to all admins about the new request
+    if (admins.length > 0) {
+      const adminEmailPromises = admins.map(async (admin) => {
+        const emailText = `Dear Admin,\n\nA new document request has been submitted.\n\nRequester Information:\nName: ${user.name}\nEmail: ${user.email}\nRoll No: ${user.rollNo}\nDepartment: ${user.department}\n\nRequest Details:\nDocument Title: ${documentTitle}\nAuthors: ${authors}\nPublication Name: ${publicationName}\nPublication Year: ${publicationYear}\nVolume No: ${volumeNo}\nIssue No: ${issueNo || 'N/A'}\nPage Range: ${pageRange || 'N/A'}\nPublisher: ${publisher}\nSource URL: ${sourceUrl}\n\nPlease review and process this request at your earliest convenience.\n\nThank you,\IIT Jodhpur Central Library System`;
+
+        const emailHtml = `
+          <h2>New Document Request Submitted</h2>
+          <p>Dear Admin,</p>
+          <p>A new document request has been submitted by a user.</p>
+
+          <h3>Requester Information:</h3>
+          <ul>
+            <li><strong>Name:</strong> ${user.name}</li>
+            <li><strong>Email:</strong> ${user.email}</li>
+            <li><strong>Roll No:</strong> ${user.rollNo}</li>
+            <li><strong>Department:</strong> ${user.department}</li>
+          </ul>
+
+          <h3>Request Details:</h3>
+          <ul>
+            <li><strong>Document Title:</strong> ${documentTitle}</li>
+            <li><strong>Authors:</strong> ${authors}</li>
+            <li><strong>Publication Name:</strong> ${publicationName}</li>
+            <li><strong>Publication Year:</strong> ${publicationYear}</li>
+            <li><strong>Volume No:</strong> ${volumeNo}</li>
+            <li><strong>Issue No:</strong> ${issueNo || 'N/A'}</li>
+            <li><strong>Page Range:</strong> ${pageRange || 'N/A'}</li>
+            <li><strong>Publisher:</strong> ${publisher}</li>
+            <li><strong>Source URL:</strong> <a href="${sourceUrl}">${sourceUrl}</a></li>
+          </ul>
+
+          <p>Please review and process this request at your earliest convenience.</p>
+          <p>Thank you,<br>IIT Jodhpur Central Library</p>
+        `;
+
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: admin.email,
+          subject: `New Document Request: ${documentTitle}`,
+          text: emailText,
+          html: emailHtml,
+        };
+
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log(`Admin notification email sent to ${admin.email}`);
+        } catch (emailError) {
+          console.error(`Failed to send email to admin ${admin.email}:`, emailError);
+        }
+      });
+
+      // Send all admin emails in parallel
+      await Promise.allSettled(adminEmailPromises);
+    }
+
     res.status(201).json({ message: 'Request submitted successfully', request: newRequest });
   } catch (error) {
     console.error(error);
@@ -231,8 +289,8 @@ const updateRequestStatus = async (req, res) => {
       emailHtml += `<p>The document has been uploaded and is available for download.</p>`;
     }
 
-    emailText += `\n\nThank you,\nLibraryX Team`;
-    emailHtml += `<p>Thank you,<br>LibraryX Team</p>`;
+    emailText += `\n\nThank you,\nIIT Jodhpur Central Library Team`;
+    emailHtml += `<p>Thank you,<br>IIT Jodhpur Central Library Team</p>`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,

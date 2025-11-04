@@ -37,7 +37,7 @@ app.use((req, res, next) => {
   }
 
   // Only apply JSON parsing for normal JSON requests
-  bodyParser.json({ limit: '10mb' })(req, res, (err) => {
+  bodyParser.json({ limit: '100mb' })(req, res, (err) => {
     if (err) {
       console.error('JSON parse error:', err.message);
       return res.status(400).json({ message: 'Invalid JSON' });
@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 });
 
 // Handle URL-encoded forms (like login)
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
 // Mount routes AFTER body parsers
 app.use('/api/auth', authRoutes);
