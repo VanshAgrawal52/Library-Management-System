@@ -4,7 +4,6 @@
 
 ### *Transforming Library Document Delivery Through Automation*
 
-[![MIT License](https://img.shields.io/badge/License-ISC-blue.svg)](https://choosealicense.com/licenses/isc/)
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb)](https://www.mongodb.com/)
