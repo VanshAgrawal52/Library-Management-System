@@ -455,9 +455,11 @@ export default function ModernLibraryDashboard() {
             {/* Left: Logo and Institute Name */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                  <GraduationCap className="w-8 h-8 text-white" />
-                </div>
+                <img
+                  src="/src/assets/logo.png"
+                  alt="IIT Jodhpur Logo"
+                  className="w-14 h-14 object-contain rounded-lg shadow-md"
+                />
                 <div>
                   <h1 className="text-xl font-bold text-slate-800 leading-tight">Indian Institute of Technology</h1>
                   <p className="text-sm text-blue-700 font-semibold">Jodhpur</p>
@@ -1168,9 +1170,11 @@ export default function ModernLibraryDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+              <img
+                  src="/src/assets/logo.png"
+                  alt="IIT Jodhpur Logo"
+                  className="w-14 h-14 object-contain rounded-lg shadow-md"
+                />
               <div>
                 <p className="text-sm font-bold text-slate-800">Indian Institute of Technology, Jodhpur</p>
                 <p className="text-xs text-slate-600">NH 62, Surpura Bypass Road, Karwar, Jodhpur - 342030</p>
